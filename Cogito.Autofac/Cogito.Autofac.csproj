@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;net47;net462</TargetFrameworks>
+        <PackageId>FileAndServe.Autofac</PackageId>
+        <Authors>File &amp; Serve</Authors>
+        <Company>File &amp; Serve</Company>
+        <Product>FileAndServe.Autofac</Product>
+        <Description>Provides some Autofac utility classes used by the rest of the Component Framework.</Description>
+        <Copyright>File &amp; Serve</Copyright>
+        <PackageTags>fsx autofac</PackageTags>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <Version>0.0.1</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Autofac" Version="4.8.1" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.2" />
+        <PackageReference Include="Cogito.Configuration" Version="1.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\FileAndServe.Configuration\FileAndServe.Configuration.csproj" />
+    </ItemGroup>
+
+</Project>
