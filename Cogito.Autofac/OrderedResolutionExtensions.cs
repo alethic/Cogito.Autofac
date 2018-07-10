@@ -9,7 +9,7 @@ using Autofac.Core;
 using Autofac.Features.Metadata;
 
 using Cogito.Collections;
-using Cogito.Core.Reflection;
+using Cogito.Reflection;
 
 namespace Cogito.Autofac
 {
