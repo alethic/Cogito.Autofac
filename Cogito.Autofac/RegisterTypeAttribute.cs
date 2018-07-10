@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FileAndServe.Autofac
+namespace Cogito.Autofac
 {
 
     /// <summary>

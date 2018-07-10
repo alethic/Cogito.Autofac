@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using Autofac;
 
-namespace FileAndServe.Autofac
+namespace Cogito.Autofac
 {
 
     /// <summary>

@@ -2,7 +2,7 @@
 
 using Autofac.Builder;
 
-namespace FileAndServe.Autofac
+namespace Cogito.Autofac
 {
 
     /// <summary>

@@ -1,6 +1,6 @@
 ﻿using Autofac;
 
-namespace FileAndServe.Autofac
+namespace Cogito.Autofac
 {
 
     public class ContainerModule :

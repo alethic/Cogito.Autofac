@@ -7,10 +7,10 @@ using Autofac.Core.Registration;
 
 using Microsoft.Extensions.Configuration;
 
-using FileAndServe.Configuration;
-using FileAndServe.Reflection;
+using Cogito.Configuration;
+using Cogito.Reflection;
 
-namespace FileAndServe.Autofac
+namespace Cogito.Autofac
 {
 
     public static class ContainerBuilderExtensions

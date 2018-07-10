@@ -3,7 +3,7 @@
 using Autofac.Builder;
 using Autofac.Features.Scanning;
 
-namespace FileAndServe.Autofac
+namespace Cogito.Autofac
 {
 
     /// <summary>

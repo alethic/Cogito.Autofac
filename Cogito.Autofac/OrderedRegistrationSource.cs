@@ -6,9 +6,9 @@ using System.Reflection;
 using Autofac.Builder;
 using Autofac.Core;
 
-using FileAndServe.Core.Reflection;
+using Cogito.Core.Reflection;
 
-namespace FileAndServe.Autofac
+namespace Cogito.Autofac
 {
 
     /// <summary>

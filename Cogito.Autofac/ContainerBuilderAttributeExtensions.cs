@@ -5,7 +5,7 @@ using System.Reflection;
 
 using Autofac;
 
-namespace FileAndServe.Autofac
+namespace Cogito.Autofac
 {
 
     public static class ContainerBuilderAttributeExtensions

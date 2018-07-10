@@ -8,10 +8,10 @@ using Autofac;
 using Autofac.Core;
 using Autofac.Features.Metadata;
 
-using FileAndServe.Collections;
-using FileAndServe.Core.Reflection;
+using Cogito.Collections;
+using Cogito.Core.Reflection;
 
-namespace FileAndServe.Autofac
+namespace Cogito.Autofac
 {
 
     /// <summary>
