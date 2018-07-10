@@ -8,7 +8,7 @@ namespace Cogito.Autofac
     /// <summary>
     /// Provides a sort order for attribute based registration. Lower orders are returned first when requesting an <see cref="IOrderedEnumerable{T}"/>.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)] 
     public class RegisterOrderAttribute :
         RegisterBuilderAttribute
     {
