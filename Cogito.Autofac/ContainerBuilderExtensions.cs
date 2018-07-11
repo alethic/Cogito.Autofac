@@ -7,7 +7,7 @@ using Autofac.Core.Registration;
 
 using Microsoft.Extensions.Configuration;
 
-using Cogito.Configuration;
+using Cogito.Extensions.Configuration;
 using Cogito.Reflection;
 
 namespace Cogito.Autofac
