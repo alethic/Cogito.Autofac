@@ -12,6 +12,8 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Version>0.0.1</Version>
         <AssemblyName>Cogito.Autofac</AssemblyName>
+        <PackageIconUrl>https://cloverluxussc.blob.core.windows.net/public/cogito-nuget-icon.png</PackageIconUrl>
+        <PackageProjectUrl>https://github.com/wasabii/Cogito.Autofac</PackageProjectUrl>
     </PropertyGroup>
 
     <ItemGroup>
