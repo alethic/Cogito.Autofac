@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
@@ -40,6 +41,48 @@ namespace Cogito.Autofac.DependencyInjection
             // populate autofac
             builder.Populate(l);
             return builder;
+        }
+
+        /// <summary>
+        /// Begins a new lifetime scope after configuring a <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="configure"></param>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        public static IServiceProvider BeginServiceProviderLifetimeScope(
+            this ILifetimeScope scope,
+            Action<IServiceCollection> configure,
+            Func<ServiceDescriptor, bool> filter = null)
+        {
+            if (scope == null)
+                throw new ArgumentNullException(nameof(scope));
+            if (configure == null)
+                throw new ArgumentNullException(nameof(configure));
+
+            return new AutofacServiceProvider(scope.BeginLifetimeScope(b => b.Populate(s => { s.Configure(scope); configure(s); }, filter)));
+        }
+
+        /// <summary>
+        /// Begins a new lifetime scope after configuring a <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="tag"></param>
+        /// <param name="configure"></param>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        public static IServiceProvider BeginServiceProviderLifetimeScope(
+            this ILifetimeScope scope,
+            object tag,
+            Action<IServiceCollection> configure,
+            Func<ServiceDescriptor, bool> filter = null)
+        {
+            if (scope == null)
+                throw new ArgumentNullException(nameof(scope));
+            if (configure == null)
+                throw new ArgumentNullException(nameof(configure));
+
+            return new AutofacServiceProvider(scope.BeginLifetimeScope(tag, b => b.Populate(s => { s.Configure(scope); configure(s); }, filter)));
         }
 
     }
