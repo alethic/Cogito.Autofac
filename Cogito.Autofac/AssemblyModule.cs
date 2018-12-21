@@ -3,11 +3,10 @@
 namespace Cogito.Autofac
 {
 
-    public class ContainerModule :
-        Module
+    public class AssemblyModule : ModuleBase
     {
 
-        protected override void Load(ContainerBuilder builder)
+        protected override void Register(ContainerBuilder builder)
         {
             builder.RegisterSource(new OrderedRegistrationSource());
         }
