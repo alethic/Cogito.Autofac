@@ -14,7 +14,7 @@ namespace Cogito.Autofac
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        bool SingleRegistration(ContainerBuilder builder)
+        bool ShouldRegister(ContainerBuilder builder)
         {
             // check if we're already registered
             if (builder.Properties.ContainsKey(GetType().AssemblyQualifiedName))
@@ -31,11 +31,11 @@ namespace Cogito.Autofac
         /// <param name="builder"></param>
         protected sealed override void Load(ContainerBuilder builder)
         {
-            if (!SingleRegistration(builder))
-                return;
-
-            Register(builder);
-            base.Load(builder);
+            if (ShouldRegister(builder))
+            {
+                Register(builder);
+                base.Load(builder);
+            }
         }
 
         /// <summary>
