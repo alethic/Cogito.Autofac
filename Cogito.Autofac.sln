@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cogito.Autofac.DependencyInjection", "Cogito.Autofac.DependencyInjection\Cogito.Autofac.DependencyInjection.csproj", "{098C046D-8A6A-4BE7-A93D-D0FC0D15BE77}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cogito.Autofac.Tests", "Cogito.Autofac.Tests\Cogito.Autofac.Tests.csproj", "{0A381072-ABCC-4FFE-A9BF-2894A5D36CAB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{098C046D-8A6A-4BE7-A93D-D0FC0D15BE77}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{098C046D-8A6A-4BE7-A93D-D0FC0D15BE77}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{098C046D-8A6A-4BE7-A93D-D0FC0D15BE77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A381072-ABCC-4FFE-A9BF-2894A5D36CAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A381072-ABCC-4FFE-A9BF-2894A5D36CAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A381072-ABCC-4FFE-A9BF-2894A5D36CAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A381072-ABCC-4FFE-A9BF-2894A5D36CAB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

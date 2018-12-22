@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Autofac;
@@ -40,6 +41,51 @@ namespace Cogito.Autofac.DependencyInjection
 
             // populate autofac
             builder.Populate(l);
+            return builder;
+        }
+
+        /// <summary>
+        /// Populates the <see cref="ContainerBuilder"/> with services registered against the generated <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="configure"></param>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        public static ContainerBuilder Populate(
+            this ContainerBuilder builder,
+            Action<IComponentContext, IServiceCollection> configure,
+            Func<ServiceDescriptor, bool> filter = null)
+        {
+            if (builder == null)
+                throw new ArgumentNullException(nameof(builder));
+            if (configure == null)
+                throw new ArgumentNullException(nameof(configure));
+
+            // ensure setup of Autofac service providers
+            builder.Populate(Enumerable.Empty<ServiceDescriptor>());
+
+            // close until after build
+            IEnumerable<ServiceDescriptor> services = null;
+
+            // after build we will invoke configure method
+            builder.RegisterBuildCallback(container =>
+            {
+                // populate service collection
+                var c = new ServiceCollection();
+                configure(container, c);
+
+                // make enumerable, optionally filter
+                var l = c.AsEnumerable();
+                if (filter != null)
+                    l = l.Where(filter);
+
+                // set as services collection
+                services = l;
+            });
+
+            // and provide registrations lazily after build
+            builder.RegisterSource(new LazyServiceDescriptorRegistrationSource(() => services));
+
             return builder;
         }
 
