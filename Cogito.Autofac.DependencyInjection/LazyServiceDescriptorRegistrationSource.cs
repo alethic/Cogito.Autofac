@@ -18,11 +18,11 @@ namespace Cogito.Autofac.DependencyInjection
     /// <summary>
     /// Provides component registrations from a set of <see cref="ServiceDescriptor"/> on demand.
     /// </summary>
-    class LazyServiceDescriptorRegistrationSource : IRegistrationSource
+    internal class LazyServiceDescriptorRegistrationSource : IRegistrationSource
     {
 
-        readonly Func<IEnumerable<ServiceDescriptor>> getServices;
-        List<IComponentRegistration> registrations;
+        private readonly Func<IEnumerable<ServiceDescriptor>> getServices;
+        private List<IComponentRegistration> registrations;
 
         /// <summary>
         /// Initializes a new instance.
@@ -36,51 +36,51 @@ namespace Cogito.Autofac.DependencyInjection
         public bool IsAdapterForIndividualComponents => false;
 
         /// <summary>
+        /// Gets the activator for the given <see cref="ServiceDescriptor"/>.
+        /// </summary>
+        /// <param name="service"></param>
+        /// <returns></returns>
+        private IInstanceActivator GetActivator(ServiceDescriptor service)
+        {
+            if (service.ImplementationInstance != null)
+                return new ProvidedInstanceActivator(
+                    service.ImplementationInstance);
+
+            if (service.ImplementationType != null)
+                return new ReflectionActivator(
+                    service.ImplementationType,
+                    new DefaultConstructorFinder(),
+                    new MostParametersConstructorSelector(),
+                    Enumerable.Empty<Parameter>(),
+                    Enumerable.Empty<Parameter>());
+
+            if (service.ImplementationFactory != null)
+                return new DelegateActivator(
+                    service.ServiceType,
+                    (c, p) => service.ImplementationFactory(c.Resolve<IServiceProvider>()));
+
+            throw new InvalidOperationException();
+        }
+
+        /// <summary>
         /// Builds the <see cref="IComponentRegistration"/>s from the specified source.
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
-        IEnumerable<IComponentRegistration> CreateRegistrations(IEnumerable<ServiceDescriptor> services)
+        private IEnumerable<IComponentRegistration> BuildRegistrations(IEnumerable<ServiceDescriptor> services)
         {
+            if (services == null)
+                throw new ArgumentNullException(nameof(services));
+
             foreach (var service in services)
-            {
-                if (service.ImplementationInstance != null)
-                    yield return new ComponentRegistration(
-                        Guid.NewGuid(),
-                        new ProvidedInstanceActivator(service.ImplementationInstance),
-                        service.Lifetime == ServiceLifetime.Singleton ? (IComponentLifetime)new RootScopeLifetime() : new CurrentScopeLifetime(),
-                        service.Lifetime == ServiceLifetime.Transient ? InstanceSharing.None : InstanceSharing.Shared,
-                        InstanceOwnership.OwnedByLifetimeScope,
-                        new[] { new TypedService(service.ServiceType) },
-                        new Dictionary<string, object>());
-
-                if (service.ImplementationType != null)
-                    yield return new ComponentRegistration(
-                        Guid.NewGuid(),
-                        new ReflectionActivator(
-                            service.ImplementationType,
-                            new DefaultConstructorFinder(),
-                            new MostParametersConstructorSelector(),
-                            Enumerable.Empty<Parameter>(),
-                            Enumerable.Empty<Parameter>()),
-                        service.Lifetime == ServiceLifetime.Singleton ? (IComponentLifetime)new RootScopeLifetime() : new CurrentScopeLifetime(),
-                        service.Lifetime == ServiceLifetime.Transient ? InstanceSharing.None : InstanceSharing.Shared,
-                        InstanceOwnership.OwnedByLifetimeScope,
-                        new[] { new TypedService(service.ServiceType) },
-                        new Dictionary<string, object>());
-
-                if (service.ImplementationFactory != null)
-                    yield return new ComponentRegistration(
-                        Guid.NewGuid(),
-                        new DelegateActivator(
-                            service.ServiceType,
-                            (c, p) => service.ImplementationFactory(c.Resolve<IServiceProvider>())),
-                        service.Lifetime == ServiceLifetime.Singleton ? (IComponentLifetime)new RootScopeLifetime() : new CurrentScopeLifetime(),
-                        service.Lifetime == ServiceLifetime.Transient ? InstanceSharing.None : InstanceSharing.Shared,
-                        InstanceOwnership.OwnedByLifetimeScope,
-                        new[] { new TypedService(service.ServiceType) },
-                        new Dictionary<string, object>());
-            }
+                yield return new ComponentRegistration(
+                    Guid.NewGuid(),
+                    GetActivator(service),
+                    service.Lifetime == ServiceLifetime.Singleton ? (IComponentLifetime)new RootScopeLifetime() : new CurrentScopeLifetime(),
+                    service.Lifetime == ServiceLifetime.Transient ? InstanceSharing.None : InstanceSharing.Shared,
+                    InstanceOwnership.OwnedByLifetimeScope,
+                    new[] { new TypedService(service.ServiceType) },
+                    new Dictionary<string, object>());
         }
 
         public IEnumerable<IComponentRegistration> RegistrationsFor(Service service, Func<Service, IEnumerable<IComponentRegistration>> registrationAccessor)
@@ -88,14 +88,14 @@ namespace Cogito.Autofac.DependencyInjection
             // initialize registrations on first call
             if (registrations == null)
                 if (getServices() is IEnumerable<ServiceDescriptor> source)
-                    registrations = CreateRegistrations(source).ToList();
+                    registrations = BuildRegistrations(source).ToList();
+
+            // no registrations initialized
+            if (registrations == null)
+                return Enumerable.Empty<IComponentRegistration>();
 
             // return filtered registrations
-            if (registrations != null)
-                return registrations.Where(i => i.Services.Contains(service));
-
-            // not initialized, no registrations
-            return Enumerable.Empty<IComponentRegistration>();
+            return registrations.Where(i => i.Services.Contains(service));
         }
 
     }
