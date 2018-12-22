@@ -18,11 +18,11 @@ namespace Cogito.Autofac.DependencyInjection
     /// <summary>
     /// Provides component registrations from a set of <see cref="ServiceDescriptor"/> on demand.
     /// </summary>
-    internal class LazyServiceDescriptorRegistrationSource : IRegistrationSource
+    class LazyServiceDescriptorRegistrationSource : IRegistrationSource
     {
 
-        private readonly Func<IEnumerable<ServiceDescriptor>> getServices;
-        private List<IComponentRegistration> registrations;
+        readonly Func<IEnumerable<ServiceDescriptor>> getServices;
+        List<IComponentRegistration> registrations;
 
         /// <summary>
         /// Initializes a new instance.
@@ -40,7 +40,7 @@ namespace Cogito.Autofac.DependencyInjection
         /// </summary>
         /// <param name="service"></param>
         /// <returns></returns>
-        private IInstanceActivator GetActivator(ServiceDescriptor service)
+        IInstanceActivator GetActivator(ServiceDescriptor service)
         {
             if (service.ImplementationInstance != null)
                 return new ProvidedInstanceActivator(
@@ -67,7 +67,7 @@ namespace Cogito.Autofac.DependencyInjection
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
-        private IEnumerable<IComponentRegistration> BuildRegistrations(IEnumerable<ServiceDescriptor> services)
+        IEnumerable<IComponentRegistration> BuildRegistrations(IEnumerable<ServiceDescriptor> services)
         {
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
