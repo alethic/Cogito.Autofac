@@ -6,6 +6,8 @@ using System.Reflection;
 using Autofac;
 using Autofac.Builder;
 
+using Cogito.Linq;
+
 namespace Cogito.Autofac
 {
 
