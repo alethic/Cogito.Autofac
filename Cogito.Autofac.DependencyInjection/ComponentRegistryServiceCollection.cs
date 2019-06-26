@@ -2,26 +2,46 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Autofac.Core;
+
 using Cogito.Collections;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Cogito.Autofac.DependencyInjection
 {
 
-    public class ComponentRegistryServiceCollection : IServiceCollection
+    /// <summary>
+    /// Provides a <see cref="IServiceCollection"/> implementation which maps operations against a <see cref="IComponentRegistry"/>.
+    /// </summary>
+    class ComponentRegistryServiceCollection : IServiceCollection
     {
 
         readonly IComponentRegistry registry;
-        readonly Dictionary<Guid, ServiceDescriptor[]> descriptorCache = new Dictionary<Guid, ServiceDescriptor[]>();
+        readonly Func<ServiceDescriptor, bool> filter;
+        readonly Dictionary<Guid, ServiceDescriptor[]> components = new Dictionary<Guid, ServiceDescriptor[]>();
+        readonly Dictionary<IRegistrationSource, ServiceDescriptor[]> sources = new Dictionary<IRegistrationSource, ServiceDescriptor[]>();
 
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
         /// <param name="registry"></param>
-        public ComponentRegistryServiceCollection(IComponentRegistry registry)
+        /// <param name="filter"></param>
+        public ComponentRegistryServiceCollection(IComponentRegistry registry, Func<ServiceDescriptor, bool> filter = null)
         {
             this.registry = registry ?? throw new ArgumentNullException(nameof(registry));
+            this.filter = filter;
+        }
+
+        /// <summary>
+        /// Initializes a new instance.
+        /// </summary>
+        /// <param name="registry"></param>
+        public ComponentRegistryServiceCollection(IComponentRegistry registry) :
+            this(registry, null)
+        {
+
         }
 
         /// <summary>
@@ -66,27 +86,49 @@ namespace Cogito.Autofac.DependencyInjection
             if (registration == null)
                 throw new ArgumentNullException(nameof(registration));
 
-            return descriptorCache.GetOrAdd(registration.Id, _ => CreateServiceDescriptors(registration).ToArray());
-        }
-
-        IComponentRegistration GetComponentRegistration(ServiceDescriptor service)
-        {
-
+            return components.GetOrAdd(registration.Id, _ => CreateServiceDescriptors(registration).ToArray());
         }
 
         public ServiceDescriptor this[int index]
         {
-            get => registry.Registrations.SelectMany(i => GetServiceDescriptors(i)).ElementAt(index);
+            get => this.ElementAt(index);
             set => throw new NotSupportedException();
         }
 
-        public int Count => registry.Registrations.SelectMany(i => GetServiceDescriptors(i)).Count();
+        /// <summary>
+        /// Returns the count of registrations in the collection.
+        /// </summary>
+        public int Count => this.Count();
 
+        /// <summary>
+        /// Returns whether the registry can be edited.
+        /// </summary>
         public bool IsReadOnly => !registry.HasLocalComponents;
 
-        public void Add(ServiceDescriptor item)
+        /// <summary>
+        /// Registers the specified <see cref="ServiceDescriptor"/> against the container.
+        /// </summary>
+        /// <param name="service"></param>
+        public void Add(ServiceDescriptor service)
         {
-            throw new NotImplementedException();
+            if (service == null)
+                throw new ArgumentNullException(nameof(service));
+
+            if (filter?.Invoke(service) != false)
+            {
+                if (service.ServiceType.GetTypeInfo().IsGenericTypeDefinition)
+                {
+                    var source = service.ToRegistrationSource();
+                    sources[source] = new[] { service };
+                    registry.AddRegistrationSource(source);
+                }
+                else
+                {
+                    var registration = service.ToComponentRegistration();
+                    components[registration.Id] = new[] { service };
+                    registry.Register(registration);
+                }
+            }
         }
 
         public void Clear()
@@ -106,41 +148,39 @@ namespace Cogito.Autofac.DependencyInjection
 
         public IEnumerator<ServiceDescriptor> GetEnumerator()
         {
-            return registry.Registrations.Select(i => ToServiceDescriptor(i));
-        }
-
-        ServiceDescriptor ToServiceDescriptor(IComponentRegistration registration)
-        {
-            switch (registration.Sharing)
-            {
-                case InstanceSharing.Shared:
-            }
+            return registry.Registrations
+                .SelectMany(i => GetServiceDescriptors(i))
+                .Concat(sources.SelectMany(i => i.Value))
+                .GetEnumerator();
         }
 
         public int IndexOf(ServiceDescriptor item)
         {
-            throw new NotImplementedException();
+            return this
+                .Select((a, i) => new { ServiceDescriptor = a, Index = i })
+                .FirstOrDefault(x => Equals(x.ServiceDescriptor, item))?.Index ?? -1;
         }
 
         public void Insert(int index, ServiceDescriptor item)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public bool Remove(ServiceDescriptor item)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public void RemoveAt(int index)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return GetEnumerator();
         }
+
     }
 
 }
