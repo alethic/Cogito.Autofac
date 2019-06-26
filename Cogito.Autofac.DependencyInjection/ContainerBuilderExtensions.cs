@@ -4,7 +4,7 @@ using System.Linq;
 
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-
+using Cogito.Collections;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Cogito.Autofac.DependencyInjection
@@ -13,6 +13,24 @@ namespace Cogito.Autofac.DependencyInjection
     public static class ContainerBuilderExtensions
     {
 
+        const string BUILD_CALLBACK_PROPERTY = "Cogito.Autofac.DependencyInjection::BuildCallback";
+
+        /// <summary>
+        /// Gets the Microsoft Dependency Injection collection to be registered on container build.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static IServiceCollection RegisterServiceBuilder(this ContainerBuilder builder)
+        {
+            var services = (IServiceCollection)builder.Properties.GetOrAdd(typeof(IServiceCollection).FullName, _ => new ServiceCollection());
+
+            // save collection in properties so we can do this multiple times
+            if ((bool?)builder.Properties.GetOrDefault(BUILD_CALLBACK_PROPERTY) != true)
+                builder.RegisterCallback(cr => cr.Populate(services));
+
+            return services;
+        }
+
         /// <summary>
         /// Populates the <see cref="ContainerBuilder"/> with services registered against the generated <see cref="IServiceCollection"/>.
         /// </summary>
@@ -20,10 +38,7 @@ namespace Cogito.Autofac.DependencyInjection
         /// <param name="configure"></param>
         /// <param name="filter"></param>
         /// <returns></returns>
-        public static ContainerBuilder Populate(
-            this ContainerBuilder builder,
-            Action<IServiceCollection> configure,
-            Func<ServiceDescriptor, bool> filter = null)
+        public static ContainerBuilder Populate(this ContainerBuilder builder, Action<IServiceCollection> configure, Func<ServiceDescriptor, bool> filter = null)
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
