@@ -108,14 +108,14 @@ namespace Cogito.Autofac.DependencyInjection
 
         public ServiceDescriptor this[int index]
         {
-            get => this.ElementAt(index);
+            get => ServiceDescriptors.ElementAt(index);
             set => throw new NotSupportedException();
         }
 
         /// <summary>
         /// Returns the count of registrations in the collection.
         /// </summary>
-        public int Count => this.AsEnumerable().Count();
+        public int Count => ServiceDescriptors.Count();
 
         /// <summary>
         /// Returns whether the registry can be edited.
@@ -154,10 +154,7 @@ namespace Cogito.Autofac.DependencyInjection
 
         public IEnumerator<ServiceDescriptor> GetEnumerator()
         {
-            return registry.Registrations
-                .SelectMany(i => GetServiceDescriptors(i))
-                .Concat(registry.Sources.SelectMany(i => GetServiceDescriptors(i)))
-                .GetEnumerator();
+            return ServiceDescriptors.GetEnumerator();
         }
 
         public int IndexOf(ServiceDescriptor item)
@@ -186,6 +183,11 @@ namespace Cogito.Autofac.DependencyInjection
         {
             return GetEnumerator();
         }
+
+        IEnumerable<ServiceDescriptor> ServiceDescriptors =>
+            registry.Registrations
+                .SelectMany(i => GetServiceDescriptors(i))
+                .Concat(registry.Sources.SelectMany(i => GetServiceDescriptors(i)));
 
     }
 
