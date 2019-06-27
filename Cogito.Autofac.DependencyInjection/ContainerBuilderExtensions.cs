@@ -3,7 +3,9 @@ using System.Linq;
 
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+
 using Cogito.Collections;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Cogito.Autofac.DependencyInjection
@@ -19,9 +21,8 @@ namespace Cogito.Autofac.DependencyInjection
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="configure"></param>
-        /// <param name="filter"></param>
         /// <returns></returns>
-        public static ContainerBuilder Populate(this ContainerBuilder builder, Action<IServiceCollection> configure, Func<ServiceDescriptor, bool> filter = null)
+        public static ContainerBuilder Populate(this ContainerBuilder builder, Action<IServiceCollection> configure)
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
@@ -35,14 +36,16 @@ namespace Cogito.Autofac.DependencyInjection
         }
 
         /// <summary>
-        /// Populates the <see cref="ContainerBuilder"/> with services registered against the generated <see cref="IServiceCollection"/>.
+        /// Begins a new lifetime scope.
         /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="configure"></param>
+        /// <param name="scope"></param>
         /// <returns></returns>
-        public static ContainerBuilder Populate(this ContainerBuilder builder, Action<IServiceCollection> configure)
+        public static IServiceProvider BeginServiceProviderLifetimeScope(this ILifetimeScope scope)
         {
-            return Populate(builder, configure, null);
+            if (scope == null)
+                throw new ArgumentNullException(nameof(scope));
+
+            return new AutofacServiceProvider(scope.BeginLifetimeScope());
         }
 
         /// <summary>
@@ -59,6 +62,20 @@ namespace Cogito.Autofac.DependencyInjection
                 throw new ArgumentNullException(nameof(configure));
 
             return new AutofacServiceProvider(scope.BeginLifetimeScope(builder => Populate(builder, configure)));
+        }
+
+        /// <summary>
+        /// Begins a new lifetime scope.
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="tag"></param>
+        /// <returns></returns>
+        public static IServiceProvider BeginServiceProviderLifetimeScope(this ILifetimeScope scope, object tag)
+        {
+            if (scope == null)
+                throw new ArgumentNullException(nameof(scope));
+
+            return new AutofacServiceProvider(scope.BeginLifetimeScope(tag));
         }
 
         /// <summary>

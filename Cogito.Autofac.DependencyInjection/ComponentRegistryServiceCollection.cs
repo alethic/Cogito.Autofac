@@ -20,7 +20,6 @@ namespace Cogito.Autofac.DependencyInjection
     {
 
         readonly IComponentRegistry registry;
-        readonly Func<ServiceDescriptor, bool> filter;
         readonly ComponentRegistryServiceCollectionCache cache;
 
         /// <summary>
@@ -81,12 +80,30 @@ namespace Cogito.Autofac.DependencyInjection
         /// </summary>
         /// <param name="registration"></param>
         /// <returns></returns>
-        ServiceDescriptor[] GetServiceDescriptors(IComponentRegistration registration)
+        IEnumerable<ServiceDescriptor> GetServiceDescriptors(IComponentRegistration registration)
         {
             if (registration == null)
                 throw new ArgumentNullException(nameof(registration));
 
-            return cache.Components.GetOrAdd(registration.Id, _ => CreateServiceDescriptors(registration).ToArray());
+            if (registration is ServiceDescriptorComponentRegistration serviceDescriptorRegistration)
+                yield return serviceDescriptorRegistration.ServiceDescriptor;
+            else
+                foreach (var descriptor in cache.Components.GetOrAdd(registration.Id, _ => CreateServiceDescriptors(registration).ToArray()))
+                    yield return descriptor;
+        }
+
+        /// <summary>
+        /// Obtains fake <see cref="ServiceDescriptor"/> entries for the given <see cref="IRegistrationSource"/>.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        IEnumerable<ServiceDescriptor> GetServiceDescriptors(IRegistrationSource source)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            if (source is ServiceDescriptorRegistrationSource serviceDescriptorSource)
+                yield return serviceDescriptorSource.ServiceDescriptors;
         }
 
         public ServiceDescriptor this[int index]
@@ -98,7 +115,7 @@ namespace Cogito.Autofac.DependencyInjection
         /// <summary>
         /// Returns the count of registrations in the collection.
         /// </summary>
-        public int Count => this.Count();
+        public int Count => this.AsEnumerable().Count();
 
         /// <summary>
         /// Returns whether the registry can be edited.
@@ -114,21 +131,10 @@ namespace Cogito.Autofac.DependencyInjection
             if (service == null)
                 throw new ArgumentNullException(nameof(service));
 
-            if (filter?.Invoke(service) != false)
-            {
-                if (service.ServiceType.GetTypeInfo().IsGenericTypeDefinition)
-                {
-                    var source = service.ToRegistrationSource();
-                    cache.Sources[source] = new[] { service };
-                    registry.AddRegistrationSource(source);
-                }
-                else
-                {
-                    var registration = service.ToComponentRegistration();
-                    cache.Components[registration.Id] = new[] { service };
-                    registry.Register(registration, true);
-                }
-            }
+            if (service.ServiceType.GetTypeInfo().IsGenericTypeDefinition == false)
+                registry.Register(new ServiceDescriptorComponentRegistration(service.ToComponentRegistration(), service), true);
+            else
+                registry.AddRegistrationSource(new ServiceDescriptorRegistrationSource(service.ToRegistrationSource(), service));
         }
 
         public void Clear()
@@ -150,7 +156,7 @@ namespace Cogito.Autofac.DependencyInjection
         {
             return registry.Registrations
                 .SelectMany(i => GetServiceDescriptors(i))
-                .Concat(cache.Sources.SelectMany(i => i.Value))
+                .Concat(registry.Sources.SelectMany(i => GetServiceDescriptors(i)))
                 .GetEnumerator();
         }
 

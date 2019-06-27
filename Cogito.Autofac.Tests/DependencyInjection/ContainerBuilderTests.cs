@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
 using Cogito.Autofac.DependencyInjection;
+
 using FluentAssertions;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -16,18 +19,17 @@ namespace Cogito.Autofac.Tests.DependencyInjection
     {
 
         [TestMethod]
-        public void Bar()
+        public void Should_return_descriptor_for_external_service()
         {
-            var c = new ServiceCollection();
-            c.AddOptions();
-            c.Configure<TestOptions>(o => o.Value = "hello").Configure<TestOptions>(o => o.Value = "Goodbye");
-            var l = c.BuildServiceProvider();
-
-            var z = l.GetRequiredService<IOptions<TestOptions>>();
+            var b = new ContainerBuilder();
+            b.RegisterInstance(new object());
+            b.Populate(s => s.AddSingleton(new object()));
+            b.Populate(s => s.Should().HaveCount(5));
+            var c = b.Build();
         }
 
         [TestMethod]
-        public void Foo()
+        public void Should_allow_open_generics_and_multiple_instance_registrations()
         {
             var b = new ContainerBuilder();
             b.Populate(s => s.AddOptions());
