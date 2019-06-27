@@ -24,7 +24,7 @@ namespace Cogito.Autofac.Tests.DependencyInjection
             var b = new ContainerBuilder();
             b.RegisterInstance(new object());
             b.Populate(s => s.AddSingleton(new object()));
-            b.Populate(s => s.Should().HaveCount(5));
+            b.Populate(s => s.Should().HaveCount(8));
             var c = b.Build();
         }
 
