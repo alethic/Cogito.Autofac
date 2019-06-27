@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+
 using Autofac.Core;
 
 using Cogito.Collections;
@@ -20,18 +21,17 @@ namespace Cogito.Autofac.DependencyInjection
 
         readonly IComponentRegistry registry;
         readonly Func<ServiceDescriptor, bool> filter;
-        readonly Dictionary<Guid, ServiceDescriptor[]> components = new Dictionary<Guid, ServiceDescriptor[]>();
-        readonly Dictionary<IRegistrationSource, ServiceDescriptor[]> sources = new Dictionary<IRegistrationSource, ServiceDescriptor[]>();
+        readonly ComponentRegistryServiceCollectionCache cache;
 
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
         /// <param name="registry"></param>
-        /// <param name="filter"></param>
-        public ComponentRegistryServiceCollection(IComponentRegistry registry, Func<ServiceDescriptor, bool> filter = null)
+        /// <param name="cache"></param>
+        public ComponentRegistryServiceCollection(IComponentRegistry registry, ComponentRegistryServiceCollectionCache cache)
         {
             this.registry = registry ?? throw new ArgumentNullException(nameof(registry));
-            this.filter = filter;
+            this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace Cogito.Autofac.DependencyInjection
             if (registration == null)
                 throw new ArgumentNullException(nameof(registration));
 
-            return components.GetOrAdd(registration.Id, _ => CreateServiceDescriptors(registration).ToArray());
+            return cache.Components.GetOrAdd(registration.Id, _ => CreateServiceDescriptors(registration).ToArray());
         }
 
         public ServiceDescriptor this[int index]
@@ -119,14 +119,14 @@ namespace Cogito.Autofac.DependencyInjection
                 if (service.ServiceType.GetTypeInfo().IsGenericTypeDefinition)
                 {
                     var source = service.ToRegistrationSource();
-                    sources[source] = new[] { service };
+                    cache.Sources[source] = new[] { service };
                     registry.AddRegistrationSource(source);
                 }
                 else
                 {
                     var registration = service.ToComponentRegistration();
-                    components[registration.Id] = new[] { service };
-                    registry.Register(registration);
+                    cache.Components[registration.Id] = new[] { service };
+                    registry.Register(registration, true);
                 }
             }
         }
@@ -150,7 +150,7 @@ namespace Cogito.Autofac.DependencyInjection
         {
             return registry.Registrations
                 .SelectMany(i => GetServiceDescriptors(i))
-                .Concat(sources.SelectMany(i => i.Value))
+                .Concat(cache.Sources.SelectMany(i => i.Value))
                 .GetEnumerator();
         }
 

@@ -3,7 +3,7 @@ using System.Linq;
 
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-
+using Cogito.Collections;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Cogito.Autofac.DependencyInjection
@@ -11,6 +11,8 @@ namespace Cogito.Autofac.DependencyInjection
 
     public static class ContainerBuilderExtensions
     {
+
+        const string COMPONENT_REGISTRY_SERVICE_CACHE_KEY = "Cogito.Autofac.DependencyInjection::Cache";
 
         /// <summary>
         /// Populates the <see cref="ContainerBuilder"/> with services registered against the generated <see cref="IServiceCollection"/>.
@@ -26,8 +28,9 @@ namespace Cogito.Autofac.DependencyInjection
             if (configure == null)
                 throw new ArgumentNullException(nameof(configure));
 
+            var cache = (ComponentRegistryServiceCollectionCache)builder.Properties.GetOrAdd(COMPONENT_REGISTRY_SERVICE_CACHE_KEY, _ => new ComponentRegistryServiceCollectionCache());
             builder.Populate(Enumerable.Empty<ServiceDescriptor>());
-            builder.RegisterCallback(registry => configure(new ComponentRegistryServiceCollection(registry, filter)));
+            builder.RegisterCallback(registry => configure(new ComponentRegistryServiceCollection(registry, cache)));
             return builder;
         }
 
