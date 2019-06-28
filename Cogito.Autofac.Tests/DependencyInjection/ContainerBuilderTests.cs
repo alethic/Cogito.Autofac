@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
@@ -27,6 +27,16 @@ namespace Cogito.Autofac.Tests.DependencyInjection
             b.Populate(s => s.AddSingleton(new object()));
             b.Populate(s => s.Should().HaveCount(8));
             var c = b.Build();
+        }
+
+        [TestMethod]
+        public void Should_be_able_to_find_autofac_service()
+        {
+            var b = new ContainerBuilder();
+            b.RegisterType<TestOptions>();
+            b.Populate(s => s.Should().ContainSingle(i => i.ServiceType == typeof(TestOptions)));
+            var c = b.Build();
+            c.Resolve<TestOptions>();
         }
 
         [TestMethod]
