@@ -205,7 +205,7 @@ namespace Cogito.Autofac.DependencyInjection
 
         public void RemoveAt(int index)
         {
-            throw new NotSupportedException();
+            Remove(ServiceDescriptors.ElementAt(index));
         }
 
         IEnumerator IEnumerable.GetEnumerator()
