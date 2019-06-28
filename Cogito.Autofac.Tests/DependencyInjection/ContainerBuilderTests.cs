@@ -89,7 +89,40 @@ namespace Cogito.Autofac.Tests.DependencyInjection
             var b = new ContainerBuilder();
             b.Populate(s => s.AddScoped(typeof(TestOptions)));
             var c = b.Build();
-            c.Resolve<TestOptions>();
+            var a = c.Resolve<TestOptions>();
+
+            var scope = c.BeginLifetimeScope();
+            var z = scope.Resolve<TestOptions>();
+
+            a.Should().NotBeSameAs(z);
+        }
+
+        [TestMethod]
+        public void Can_register_singleton_and_get_in_scope()
+        {
+            var b = new ContainerBuilder();
+            b.Populate(s => s.AddSingleton(typeof(TestOptions)));
+            var c = b.Build();
+            var a = c.Resolve<TestOptions>();
+
+            var scope = c.BeginLifetimeScope();
+            var z = scope.Resolve<TestOptions>();
+
+            a.Should().BeSameAs(z);
+        }
+
+        [TestMethod]
+        public void Can_register_options_and_get_in_scope()
+        {
+            var b = new ContainerBuilder();
+            b.Populate(s => s.Configure<TestOptions>(o => o.Value = "Set"));
+            var c = b.Build();
+            var a = c.Resolve<IOptions<TestOptions>>();
+
+            var scope = c.BeginLifetimeScope();
+            var z = scope.Resolve<IOptions<TestOptions>>();
+
+            a.Should().BeSameAs(z);
         }
 
         class TestOptions

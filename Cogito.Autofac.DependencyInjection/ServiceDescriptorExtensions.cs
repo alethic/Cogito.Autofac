@@ -62,7 +62,12 @@ namespace Cogito.Autofac.DependencyInjection
             if (service.ServiceType.GetTypeInfo().IsGenericTypeDefinition)
                 return new ServiceDescriptorRegistrationSource(
                     new OpenGenericRegistrationSource(
-                        new RegistrationData(new TypedService(service.ServiceType)),
+                        new RegistrationData(new TypedService(service.ServiceType))
+                        {
+                            Lifetime = service.Lifetime == ServiceLifetime.Singleton ? (IComponentLifetime)new RootScopeLifetime() : new CurrentScopeLifetime(),
+                            Sharing = service.Lifetime == ServiceLifetime.Transient ? InstanceSharing.None : InstanceSharing.Shared,
+                            Ownership = InstanceOwnership.OwnedByLifetimeScope
+                        },
                         new ReflectionActivatorData(service.ImplementationType)),
                     service);
 
