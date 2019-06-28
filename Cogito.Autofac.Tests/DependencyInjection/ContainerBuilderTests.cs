@@ -43,7 +43,6 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         public void Should_allow_open_generics_and_multiple_instance_registrations()
         {
             var b = new ContainerBuilder();
-            b.Populate(s => s.AddOptions());
             b.Populate(s => s.Configure<TestOptions>(a => a.Value = "Hello").Configure<TestOptions>(a => a.Value = "Goodbye"));
             var c = b.Build();
 

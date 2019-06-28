@@ -80,6 +80,11 @@ namespace Cogito.Autofac.DependencyInjection
             parent.RaisePreparing(context, ref parameters);
         }
 
+        public override string ToString()
+        {
+            return parent.ToString();
+        }
+
         public ServiceDescriptor ServiceDescriptor => serviceDescriptor;
 
     }

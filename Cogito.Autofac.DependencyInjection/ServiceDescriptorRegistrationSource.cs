@@ -34,6 +34,11 @@ namespace Cogito.Autofac.DependencyInjection
             return parent.RegistrationsFor(service, registrationAccessor);
         }
 
+        public override string ToString()
+        {
+            return parent.ToString();
+        }
+
         /// <summary>
         /// Gets the originally assigned descriptor.
         /// </summary>
