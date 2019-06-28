@@ -84,6 +84,15 @@ namespace Cogito.Autofac.Tests.DependencyInjection
             var c = b.Build();
         }
 
+        [TestMethod]
+        public void Can_register_scoped()
+        {
+            var b = new ContainerBuilder();
+            b.Populate(s => s.AddScoped(typeof(TestOptions)));
+            var c = b.Build();
+            c.Resolve<TestOptions>();
+        }
+
         class TestOptions
         {
 
