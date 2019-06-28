@@ -60,6 +60,10 @@ namespace Cogito.Autofac.DependencyInjection
                 throw new ArgumentNullException(nameof(service));
 
             if (service.ServiceType.GetTypeInfo().IsGenericTypeDefinition)
+            {
+                if (service.ImplementationType == null)
+                    throw new NotSupportedException("Cannot register open generic types without implementation type.");
+
                 return new ServiceDescriptorRegistrationSource(
                     new OpenGenericRegistrationSource(
                         new RegistrationData(new TypedService(service.ServiceType))
@@ -70,6 +74,7 @@ namespace Cogito.Autofac.DependencyInjection
                         },
                         new ReflectionActivatorData(service.ImplementationType)),
                     service);
+            }
 
             throw new NotSupportedException();
         }
