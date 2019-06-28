@@ -31,7 +31,7 @@ namespace Cogito.Autofac.DependencyInjection
 
             var cache = (ComponentRegistryServiceCollectionCache)builder.Properties.GetOrAdd(COMPONENT_REGISTRY_SERVICE_CACHE_KEY, _ => new ComponentRegistryServiceCollectionCache());
             builder.Populate(Enumerable.Empty<ServiceDescriptor>());
-            builder.RegisterCallback(registry => configure(new ComponentRegistryServiceCollection(registry, cache)));
+            builder.RegisterCallback(registry => { var s = new ComponentRegistryServiceCollection(registry, cache); configure(s); s.Flush(); });
             return builder;
         }
 

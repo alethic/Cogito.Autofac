@@ -12,6 +12,7 @@ using Autofac.Core.Activators.Reflection;
 using Autofac.Core.Lifetime;
 using Autofac.Core.Registration;
 using Autofac.Features.OpenGenerics;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Cogito.Autofac.DependencyInjection
@@ -36,14 +37,16 @@ namespace Cogito.Autofac.DependencyInjection
             if (service.ServiceType.GetTypeInfo().IsGenericTypeDefinition)
                 throw new NotSupportedException();
 
-            return new ComponentRegistration(
-                Guid.NewGuid(),
-                GetActivator(service),
-                service.Lifetime == ServiceLifetime.Singleton ? (IComponentLifetime)new RootScopeLifetime() : new CurrentScopeLifetime(),
-                service.Lifetime == ServiceLifetime.Transient ? InstanceSharing.None : InstanceSharing.Shared,
-                InstanceOwnership.OwnedByLifetimeScope,
-                new[] { new TypedService(service.ServiceType) },
-                EmptyMetadata);
+            return new ServiceDescriptorComponentRegistration(
+                new ComponentRegistration(
+                    Guid.NewGuid(),
+                    GetActivator(service),
+                    service.Lifetime == ServiceLifetime.Singleton ? (IComponentLifetime)new RootScopeLifetime() : new CurrentScopeLifetime(),
+                    service.Lifetime == ServiceLifetime.Transient ? InstanceSharing.None : InstanceSharing.Shared,
+                    InstanceOwnership.OwnedByLifetimeScope,
+                    new[] { new TypedService(service.ServiceType) },
+                    EmptyMetadata),
+                service);
         }
 
         /// <summary>
@@ -57,7 +60,11 @@ namespace Cogito.Autofac.DependencyInjection
                 throw new ArgumentNullException(nameof(service));
 
             if (service.ServiceType.GetTypeInfo().IsGenericTypeDefinition)
-                return new OpenGenericRegistrationSource(new RegistrationData(new TypedService(service.ServiceType)), new ReflectionActivatorData(service.ImplementationType));
+                return new ServiceDescriptorRegistrationSource(
+                    new OpenGenericRegistrationSource(
+                        new RegistrationData(new TypedService(service.ServiceType)),
+                        new ReflectionActivatorData(service.ImplementationType)),
+                    service);
 
             throw new NotSupportedException();
         }

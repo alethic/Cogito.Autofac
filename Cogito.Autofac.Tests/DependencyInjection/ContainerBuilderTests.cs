@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
@@ -46,6 +47,31 @@ namespace Cogito.Autofac.Tests.DependencyInjection
 
             var l = c.Resolve<IEnumerable<IOptions<TestOptions>>>();
             l.Should().HaveCount(1);
+        }
+
+        [TestMethod]
+        public void Can_remove_descriptor_added_in_same_pass()
+        {
+            var b = new ContainerBuilder();
+            b.Populate(s =>
+            {
+                var d = ServiceDescriptor.Singleton(new object());
+                s.Add(d);
+                s.Remove(d).Should().BeTrue();
+            });
+            var c = b.Build();
+            c.ResolveOptional<object>().Should().BeNull();
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(NotSupportedException))]
+        public void Should_fail_when_trying_to_remove_service_registered_elsewhere()
+        {
+            var d = ServiceDescriptor.Singleton(new object());
+            var b = new ContainerBuilder();
+            b.Populate(s => s.Add(d));
+            b.Populate(s => s.Remove(d));
+            var c = b.Build();
         }
 
         class TestOptions
