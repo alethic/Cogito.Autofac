@@ -21,8 +21,7 @@ namespace Cogito.Autofac.DependencyInjection
 
         readonly IComponentRegistry registry;
         readonly ComponentRegistryServiceCollectionCache cache;
-        readonly List<IComponentRegistration> registrations = new List<IComponentRegistration>();
-        readonly List<IRegistrationSource> sources = new List<IRegistrationSource>();
+        readonly List<ServiceDescriptor> registrations = new List<ServiceDescriptor>();
 
         /// <summary>
         /// Initializes a new instance.
@@ -51,12 +50,21 @@ namespace Cogito.Autofac.DependencyInjection
         public void Flush()
         {
             foreach (var registration in registrations.AsEnumerable().Reverse())
-                registry.Register(registration, false);
-            registrations.Clear();
+                Register(registration);
 
-            foreach (var source in sources.AsEnumerable().Reverse())
-                registry.AddRegistrationSource(source);
-            sources.Clear();
+            registrations.Clear();
+        }
+
+        /// <summary>
+        /// Registers the specified service descriptor.
+        /// </summary>
+        /// <param name="registration"></param>
+        void Register(ServiceDescriptor registration)
+        {
+            if (registration.ServiceType.GetTypeInfo().IsGenericTypeDefinition == false)
+                registry.Register(registration.ToComponentRegistration());
+            else
+                registry.AddRegistrationSource(registration.ToRegistrationSource());
         }
 
         /// <summary>
@@ -122,6 +130,11 @@ namespace Cogito.Autofac.DependencyInjection
                 yield return serviceDescriptorSource.ServiceDescriptors;
         }
 
+        /// <summary>
+        /// Gets the <see cref="ServiceDescriptor"/> at the specified position.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ServiceDescriptor this[int index]
         {
             get => ServiceDescriptors.ElementAt(index);
@@ -147,10 +160,7 @@ namespace Cogito.Autofac.DependencyInjection
             if (service == null)
                 throw new ArgumentNullException(nameof(service));
 
-            if (service.ServiceType.GetTypeInfo().IsGenericTypeDefinition == false)
-                registrations.Add(service.ToComponentRegistration());
-            else
-                sources.Add(service.ToRegistrationSource());
+            registrations.Add(service);
         }
 
         public void Clear()
@@ -160,7 +170,7 @@ namespace Cogito.Autofac.DependencyInjection
 
         public bool Contains(ServiceDescriptor item)
         {
-            return registry.IsRegistered(new TypedService(item.ServiceType));
+            return registrations.Contains(item) || registry.IsRegistered(new TypedService(item.ServiceType));
         }
 
         public void CopyTo(ServiceDescriptor[] array, int arrayIndex)
@@ -177,7 +187,7 @@ namespace Cogito.Autofac.DependencyInjection
 
         public int IndexOf(ServiceDescriptor item)
         {
-            return this
+            return ServiceDescriptors
                 .Select((a, i) => new { ServiceDescriptor = a, Index = i })
                 .FirstOrDefault(x => Equals(x.ServiceDescriptor, item))?.Index ?? -1;
         }
@@ -190,15 +200,15 @@ namespace Cogito.Autofac.DependencyInjection
         public bool Remove(ServiceDescriptor item)
         {
             // we can support removing descriptors that are staged
-            if (registrations.OfType<ServiceDescriptorComponentRegistration>().FirstOrDefault(i => i.ServiceDescriptor == item) is IComponentRegistration registration)
+            if (registrations.Contains(item))
             {
-                registrations.Remove(registration);
+                registrations.Remove(item);
                 return true;
             }
 
             // existing descriptor that matches, but ourside of our staged items, we cannot support removing
             if (ServiceDescriptors.Contains(item))
-                throw new NotSupportedException("Cannot remove a service added from a separate call to Populate.");
+                throw new NotSupportedException("Cannot remove a service added from a separate call to Populate or which was not registered by Microsoft Dependency Injection.");
 
             return false;
         }
@@ -217,8 +227,7 @@ namespace Cogito.Autofac.DependencyInjection
             registry.Registrations
                 .SelectMany(i => GetServiceDescriptors(i))
                 .Concat(registry.Sources.SelectMany(i => GetServiceDescriptors(i)))
-                .Concat(registrations.SelectMany(i => GetServiceDescriptors(i)))
-                .Concat(sources.SelectMany(i => GetServiceDescriptors(i)));
+                .Concat(registrations);
 
     }
 

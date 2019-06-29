@@ -38,14 +38,13 @@ namespace Cogito.Autofac.DependencyInjection
                 throw new NotSupportedException();
 
             return new ServiceDescriptorComponentRegistration(
-                new ComponentRegistration(
-                    Guid.NewGuid(),
-                    GetActivator(service),
-                    GetComponentLifetime(service),
-                    GetInstanceSharing(service),
-                    InstanceOwnership.OwnedByLifetimeScope,
-                    new[] { new TypedService(service.ServiceType) },
-                    EmptyMetadata),
+                Guid.NewGuid(),
+                GetActivator(service),
+                GetComponentLifetime(service),
+                GetInstanceSharing(service),
+                InstanceOwnership.OwnedByLifetimeScope,
+                new[] { new TypedService(service.ServiceType) },
+                EmptyMetadata,
                 service);
         }
 
@@ -64,16 +63,14 @@ namespace Cogito.Autofac.DependencyInjection
                 if (service.ImplementationType == null)
                     throw new NotSupportedException("Cannot register open generic types without implementation type.");
 
-                return new ServiceDescriptorRegistrationSource(
-                    new OpenGenericRegistrationSource(
-                        new RegistrationData(new TypedService(service.ServiceType))
-                        {
-                            Lifetime = GetComponentLifetime(service),
-                            Sharing = GetInstanceSharing(service),
-                            Ownership = InstanceOwnership.OwnedByLifetimeScope
-                        },
-                        new ReflectionActivatorData(service.ImplementationType)),
-                    service);
+                return new OpenGenericRegistrationSource(
+                    new RegistrationData(new TypedService(service.ServiceType))
+                    {
+                        Lifetime = GetComponentLifetime(service),
+                        Sharing = GetInstanceSharing(service),
+                        Ownership = InstanceOwnership.OwnedByLifetimeScope
+                    },
+                    new ReflectionActivatorData(service.ImplementationType));
             }
 
             throw new NotSupportedException();
@@ -136,7 +133,6 @@ namespace Cogito.Autofac.DependencyInjection
             {
                 case ServiceLifetime.Singleton:
                 case ServiceLifetime.Scoped:
-                    return InstanceSharing.Shared;
                     return InstanceSharing.Shared;
                 case ServiceLifetime.Transient:
                     return InstanceSharing.None;
