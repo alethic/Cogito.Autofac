@@ -41,8 +41,8 @@ namespace Cogito.Autofac.DependencyInjection
                 new ComponentRegistration(
                     Guid.NewGuid(),
                     GetActivator(service),
-                    service.Lifetime == ServiceLifetime.Singleton ? (IComponentLifetime)new RootScopeLifetime() : new CurrentScopeLifetime(),
-                    service.Lifetime == ServiceLifetime.Transient ? InstanceSharing.None : InstanceSharing.Shared,
+                    GetComponentLifetime(service),
+                    GetInstanceSharing(service),
                     InstanceOwnership.OwnedByLifetimeScope,
                     new[] { new TypedService(service.ServiceType) },
                     EmptyMetadata),
@@ -68,8 +68,8 @@ namespace Cogito.Autofac.DependencyInjection
                     new OpenGenericRegistrationSource(
                         new RegistrationData(new TypedService(service.ServiceType))
                         {
-                            Lifetime = service.Lifetime == ServiceLifetime.Singleton ? (IComponentLifetime)new RootScopeLifetime() : new CurrentScopeLifetime(),
-                            Sharing = service.Lifetime == ServiceLifetime.Transient ? InstanceSharing.None : InstanceSharing.Shared,
+                            Lifetime = GetComponentLifetime(service),
+                            Sharing = GetInstanceSharing(service),
                             Ownership = InstanceOwnership.OwnedByLifetimeScope
                         },
                         new ReflectionActivatorData(service.ImplementationType)),
@@ -104,6 +104,45 @@ namespace Cogito.Autofac.DependencyInjection
                     (c, p) => service.ImplementationFactory(c.Resolve<IServiceProvider>()));
 
             throw new InvalidOperationException();
+        }
+
+        /// <summary>
+        /// Gets the component lifetime for a <see cref="ServiceDescriptor"/>.
+        /// </summary>
+        /// <param name="service"></param>
+        /// <returns></returns>
+        static IComponentLifetime GetComponentLifetime(ServiceDescriptor service)
+        {
+            switch (service.Lifetime)
+            {
+                case ServiceLifetime.Singleton:
+                    return new RootScopeLifetime();
+                case ServiceLifetime.Transient:
+                case ServiceLifetime.Scoped:
+                    return new CurrentScopeLifetime();
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        /// <summary>
+        /// Gets the instance sharing mode for a <see cref="ServiceDescriptor"/>.
+        /// </summary>
+        /// <param name="service"></param>
+        /// <returns></returns>
+        static InstanceSharing GetInstanceSharing(ServiceDescriptor service)
+        {
+            switch (service.Lifetime)
+            {
+                case ServiceLifetime.Singleton:
+                case ServiceLifetime.Scoped:
+                    return InstanceSharing.Shared;
+                    return InstanceSharing.Shared;
+                case ServiceLifetime.Transient:
+                    return InstanceSharing.None;
+                default:
+                    throw new InvalidOperationException();
+            }
         }
 
     }

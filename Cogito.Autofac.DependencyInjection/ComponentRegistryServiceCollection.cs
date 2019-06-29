@@ -51,7 +51,7 @@ namespace Cogito.Autofac.DependencyInjection
         public void Flush()
         {
             foreach (var registration in registrations.AsEnumerable().Reverse())
-                registry.Register(registration);
+                registry.Register(registration, false);
             registrations.Clear();
 
             foreach (var source in sources.AsEnumerable().Reverse())
