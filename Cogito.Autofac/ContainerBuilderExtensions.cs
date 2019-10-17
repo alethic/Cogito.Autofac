@@ -15,6 +15,8 @@ namespace Cogito.Autofac
     public static class ContainerBuilderExtensions
     {
 
+#if NETSTANDARD2_0
+
         /// <summary>
         /// Registers all modules found in all assemblies.
         /// </summary>
@@ -30,6 +32,8 @@ namespace Cogito.Autofac
 
             return builder.RegisterAssemblyModules(SafeAssemblyLoader.LoadAll(dependencyContext).ToArray());
         }
+
+#endif
 
         /// <summary>
         /// Registers all modules found in all assemblies.
