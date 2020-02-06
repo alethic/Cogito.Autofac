@@ -13,6 +13,7 @@
         <Version>0.0.1</Version>
         <PackageProjectUrl>https://github.com/wasabii/Cogito.Autofac</PackageProjectUrl>
         <PackageIconUrl>https://cloverluxussc.blob.core.windows.net/public/cogito-nuget-icon.png</PackageIconUrl>
+        <LangVersion>8.0</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

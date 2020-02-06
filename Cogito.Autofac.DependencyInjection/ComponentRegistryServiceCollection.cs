@@ -17,7 +17,7 @@ namespace Cogito.Autofac.DependencyInjection
     /// <summary>
     /// Provides a <see cref="IServiceCollection"/> implementation which maps operations against a <see cref="IComponentRegistry"/>.
     /// </summary>
-    class ComponentRegistryServiceCollection : IServiceCollection
+    class ComponentRegistryServiceCollection : IServiceCollection, IDisposable
     {
 
         readonly IComponentRegistryBuilder builder;
@@ -243,6 +243,16 @@ namespace Cogito.Autofac.DependencyInjection
             registered
                 .SelectMany(i => GetServiceDescriptors(i))
                 .Concat(staged);
+
+        /// <summary>
+        /// Disposes of the instance.
+        /// </summary>
+        public void Dispose()
+        {
+            // unsubscribe from builder
+            if (builder != null)
+                builder.Registered -= builder_Registered;
+        }
 
     }
 
