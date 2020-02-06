@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 
 using Autofac.Core;
+using Autofac.Core.Registration;
 
 using Cogito.Collections;
 
@@ -19,27 +20,40 @@ namespace Cogito.Autofac.DependencyInjection
     class ComponentRegistryServiceCollection : IServiceCollection
     {
 
-        readonly IComponentRegistry registry;
+        readonly IComponentRegistryBuilder builder;
         readonly ComponentRegistryServiceCollectionCache cache;
-        readonly List<ServiceDescriptor> registrations = new List<ServiceDescriptor>();
+        readonly List<IComponentRegistration> registered = new List<IComponentRegistration>();
+        readonly List<ServiceDescriptor> staged = new List<ServiceDescriptor>();
 
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
-        /// <param name="registry"></param>
+        /// <param name="builder"></param>
         /// <param name="cache"></param>
-        public ComponentRegistryServiceCollection(IComponentRegistry registry, ComponentRegistryServiceCollectionCache cache)
+        public ComponentRegistryServiceCollection(IComponentRegistryBuilder builder, ComponentRegistryServiceCollectionCache cache)
         {
-            this.registry = registry ?? throw new ArgumentNullException(nameof(registry));
+            this.builder = builder ?? throw new ArgumentNullException(nameof(builder));
             this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
+
+            builder.Registered += builder_Registered;
+        }
+
+        /// <summary>
+        /// Invoked when a component is registered with the underlying builder.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        void builder_Registered(object sender, ComponentRegisteredEventArgs args)
+        {
+            registered.Add(args.ComponentRegistration);
         }
 
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
-        /// <param name="registry"></param>
-        public ComponentRegistryServiceCollection(IComponentRegistry registry) :
-            this(registry, null)
+        /// <param name="builder"></param>
+        public ComponentRegistryServiceCollection(IComponentRegistryBuilder builder) :
+            this(builder, null)
         {
 
         }
@@ -49,10 +63,12 @@ namespace Cogito.Autofac.DependencyInjection
         /// </summary>
         public void Flush()
         {
-            foreach (var registration in registrations.AsEnumerable().Reverse())
+            // register each of the staged items
+            foreach (var registration in staged.AsEnumerable().Reverse())
                 Register(registration);
 
-            registrations.Clear();
+            // clear the staging area
+            staged.Clear();
         }
 
         /// <summary>
@@ -62,9 +78,9 @@ namespace Cogito.Autofac.DependencyInjection
         void Register(ServiceDescriptor registration)
         {
             if (registration.ServiceType.GetTypeInfo().IsGenericTypeDefinition == false)
-                registry.Register(registration.ToComponentRegistration());
+                builder.Register(registration.ToComponentRegistration());
             else
-                registry.AddRegistrationSource(registration.ToRegistrationSource());
+                builder.AddRegistrationSource(registration.ToRegistrationSource());
         }
 
         /// <summary>
@@ -149,7 +165,7 @@ namespace Cogito.Autofac.DependencyInjection
         /// <summary>
         /// Returns whether the registry can be edited.
         /// </summary>
-        public bool IsReadOnly => !registry.HasLocalComponents;
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Registers the specified <see cref="ServiceDescriptor"/> against the container.
@@ -160,7 +176,7 @@ namespace Cogito.Autofac.DependencyInjection
             if (service == null)
                 throw new ArgumentNullException(nameof(service));
 
-            registrations.Add(service);
+            staged.Add(service);
         }
 
         public void Clear()
@@ -170,7 +186,7 @@ namespace Cogito.Autofac.DependencyInjection
 
         public bool Contains(ServiceDescriptor item)
         {
-            return registrations.Contains(item) || registry.IsRegistered(new TypedService(item.ServiceType));
+            return staged.Contains(item) || builder.IsRegistered(new TypedService(item.ServiceType));
         }
 
         public void CopyTo(ServiceDescriptor[] array, int arrayIndex)
@@ -200,13 +216,13 @@ namespace Cogito.Autofac.DependencyInjection
         public bool Remove(ServiceDescriptor item)
         {
             // we can support removing descriptors that are staged
-            if (registrations.Contains(item))
+            if (staged.Contains(item))
             {
-                registrations.Remove(item);
+                staged.Remove(item);
                 return true;
             }
 
-            // existing descriptor that matches, but ourside of our staged items, we cannot support removing
+            // existing descriptor that matches, but outside of our staged items, we cannot support removing
             if (ServiceDescriptors.Contains(item))
                 throw new NotSupportedException("Cannot remove a service added from a separate call to Populate or which was not registered by Microsoft Dependency Injection.");
 
@@ -224,10 +240,9 @@ namespace Cogito.Autofac.DependencyInjection
         }
 
         IEnumerable<ServiceDescriptor> ServiceDescriptors =>
-            registry.Registrations
+            registered
                 .SelectMany(i => GetServiceDescriptors(i))
-                .Concat(registry.Sources.SelectMany(i => GetServiceDescriptors(i)))
-                .Concat(registrations);
+                .Concat(staged);
 
     }
 
