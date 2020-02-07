@@ -1,29 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <PackageId>Cogito.Autofac.DependencyInjection</PackageId>
-        <Authors>Jerome Haltom</Authors>
-        <Company>Jerome Haltom</Company>
-        <Product>Cogito.Autofac.DependencyInjection</Product>
-        <Description>Provides various Autofac related integration to Microsoft.Extensions.DependencyInjection.</Description>
-        <Copyright>Jerome Haltom</Copyright>
-        <PackageTags>autofac</PackageTags>
-        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-        <Version>0.0.1</Version>
-        <PackageProjectUrl>https://github.com/wasabii/Cogito.Autofac</PackageProjectUrl>
-        <PackageIconUrl>https://cloverluxussc.blob.core.windows.net/public/cogito-nuget-icon.png</PackageIconUrl>
-        <LangVersion>8.0</LangVersion>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>Provides various Autofac related integration to Microsoft.Extensions.DependencyInjection.</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Autofac" Version="5.0.0" />
-        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.1" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="5.0.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.1" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Cogito.Autofac\Cogito.Autofac.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Cogito.Autofac\Cogito.Autofac.csproj" />
+  </ItemGroup>
 
 </Project>
