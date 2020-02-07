@@ -22,3 +22,13 @@ build:
 artifacts:
   - path: pkg\*.nupkg
     name: Cogito.Autofac
+
+deploy:
+  provider: NuGet
+  server: https://nuget.pkg.github.com/wasabii/index.json
+  username: wasabii
+  api_key:
+    secure: xrFuWmVqekabWUvYce7mOmKS4ToqdtFJOGgiLYyrDRVZJhMSMvpOUVxf0mhzwGiH
+  skip_symbols: false
+  symbol_server:
+  artifact: /.*\.nupkg/
