@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net47;net462</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.0;net47;net462</TargetFrameworks>
     <Description>Provides various autofac utilities, and a new unique attribute registration system.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
@@ -10,9 +10,16 @@
     <PackageReference Include="Autofac" Version="5.0.0" />
     <PackageReference Include="Autofac.Extras.AggregateService" Version="5.0.0" />
     <PackageReference Include="Castle.Core" Version="4.4.0" />
+    <PackageReference Include="Cogito.Core" Version="3.0.11" />
+    <PackageReference Include="Cogito.Extensions.Configuration" Version="2.0.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' != 'netcoreapp3.0' ">
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.1" />
-    <PackageReference Include="Cogito.Extensions.Configuration" Version="1.2.6" />
-    <PackageReference Include="Cogito.Core" Version="3.0.7" />
   </ItemGroup>
 
 </Project>
