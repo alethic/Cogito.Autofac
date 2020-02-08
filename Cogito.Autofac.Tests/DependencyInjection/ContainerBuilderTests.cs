@@ -22,7 +22,7 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         [TestMethod]
         public void Should_return_descriptor_for_external_service()
         {
-            var b = new ContainerBuilder();
+            var b = new global::Autofac.ContainerBuilder();
             b.RegisterInstance(new object());
             b.Populate(s => s.AddSingleton(new object()));
             b.Populate(s => s.Should().HaveCount(8));
@@ -32,7 +32,7 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         [TestMethod]
         public void Should_be_able_to_find_autofac_service()
         {
-            var b = new ContainerBuilder();
+            var b = new global::Autofac.ContainerBuilder();
             b.RegisterType<TestOptions>();
             b.Populate(s => s.Should().ContainSingle(i => i.ServiceType == typeof(TestOptions)));
             var c = b.Build();
@@ -42,7 +42,7 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         [TestMethod]
         public void Should_allow_open_generics_and_multiple_instance_registrations()
         {
-            var b = new ContainerBuilder();
+            var b = new global::Autofac.ContainerBuilder();
             b.Populate(s => s.Configure<TestOptions>(a => a.Value = "Hello").Configure<TestOptions>(a => a.Value = "Goodbye"));
             var c = b.Build();
 
@@ -61,7 +61,7 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         [TestMethod]
         public void Can_remove_descriptor_added_in_same_pass()
         {
-            var b = new ContainerBuilder();
+            var b = new global::Autofac.ContainerBuilder();
             b.Populate(s =>
             {
                 var d = ServiceDescriptor.Singleton(new object());
@@ -77,7 +77,7 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         public void Should_fail_when_trying_to_remove_service_registered_elsewhere()
         {
             var d = ServiceDescriptor.Singleton(new object());
-            var b = new ContainerBuilder();
+            var b = new global::Autofac.ContainerBuilder();
             b.Populate(s => s.Add(d));
             b.Populate(s => s.Remove(d));
             var c = b.Build();
@@ -86,7 +86,7 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         [TestMethod]
         public void Can_register_scoped()
         {
-            var b = new ContainerBuilder();
+            var b = new global::Autofac.ContainerBuilder();
             b.Populate(s => s.AddScoped(typeof(TestOptions)));
             var c = b.Build();
             var a = c.Resolve<TestOptions>();
@@ -100,7 +100,7 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         [TestMethod]
         public void Can_register_singleton_and_get_in_scope()
         {
-            var b = new ContainerBuilder();
+            var b = new global::Autofac.ContainerBuilder();
             b.Populate(s => s.AddSingleton(typeof(TestOptions)));
             var c = b.Build();
             var a = c.Resolve<TestOptions>();
@@ -114,7 +114,7 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         [TestMethod]
         public void Can_register_options_and_get_in_scope()
         {
-            var b = new ContainerBuilder();
+            var b = new global::Autofac.ContainerBuilder();
             b.Populate(s => s.Configure<TestOptions>(o => o.Value = "Set"));
             var c = b.Build();
             var a = c.Resolve<IOptions<TestOptions>>();
@@ -128,7 +128,7 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         [TestMethod]
         public void Can_register_options_and_get_in_scope_with_builder()
         {
-            var b = new ContainerBuilder();
+            var b = new global::Autofac.ContainerBuilder();
             b.Populate(s => s.AddSingleton<TestOptions>());
             var c = b.Build();
             var a = c.Resolve<TestOptions>();
@@ -140,7 +140,7 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         [TestMethod]
         public void Can_register_options_and_get_in_scope_with_builder2()
         {
-            var b = new ContainerBuilder();
+            var b = new global::Autofac.ContainerBuilder();
             b.RegisterType<TestOptions>().SingleInstance();
             var c = b.Build();
             var a = c.Resolve<TestOptions>();
