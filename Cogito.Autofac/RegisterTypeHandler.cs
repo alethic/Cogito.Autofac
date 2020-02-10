@@ -21,6 +21,7 @@ namespace Cogito.Autofac
         /// <summary>
         /// Registers the type using the standard registration flow.
         /// </summary>
+        /// <param name="builder"></param>
         /// <param name="type"></param>
         /// <param name="attributes"></param>
         public virtual void Register(
@@ -47,6 +48,7 @@ namespace Cogito.Autofac
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="type"></param>
+        /// <param name="attributes"></param>
         /// <param name="builders"></param>
         protected virtual void Register(
             ContainerBuilder builder,
@@ -56,6 +58,8 @@ namespace Cogito.Autofac
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
+            if (type is null)
+                throw new ArgumentNullException(nameof(type));
             if (attributes == null)
                 throw new ArgumentNullException(nameof(attributes));
             if (builders == null)
@@ -79,6 +83,8 @@ namespace Cogito.Autofac
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
+            if (type is null)
+                throw new ArgumentNullException(nameof(type));
             if (attribute == null)
                 throw new ArgumentNullException(nameof(attribute));
             if (builders == null)
@@ -88,10 +94,25 @@ namespace Cogito.Autofac
             if (attribute is IRegistrationBuilderAttribute a)
                 builders = builders.Prepend(a);
 
+            /// register with final set of builders
+            Register(builder, type, builders);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="type"></param>
+        /// <param name="builders"></param>
+        protected virtual void Register(
+            ContainerBuilder builder,
+            Type type,
+            IEnumerable<IRegistrationBuilderAttribute> builders)
+        {
             if (type.GetTypeInfo().IsGenericType)
-                ApplyBuilders(type, builder.RegisterGeneric(type), attribute, builders);
+                ApplyBuilders(type, builder.RegisterGeneric(type), builders);
             else
-                ApplyBuilders(type, builder.RegisterType(type), attribute, builders);
+                ApplyBuilders(type, builder.RegisterType(type), builders);
         }
 
         /// <summary>
@@ -101,6 +122,9 @@ namespace Cogito.Autofac
         /// <returns></returns>
         protected virtual IEnumerable<IRegistrationBuilderAttribute> GetBuilders(Type type)
         {
+            if (type is null)
+                throw new ArgumentNullException(nameof(type));
+
             return type.GetCustomAttributes()
                 .OfType<IRegistrationBuilderAttribute>()
                 .Where(i => !i.GetType().IsAssignableTo<IRegistrationRootAttribute>());
@@ -112,19 +136,19 @@ namespace Cogito.Autofac
         /// <typeparam name="TLimit"></typeparam>
         /// <typeparam name="TActivatorData"></typeparam>
         /// <typeparam name="TRegistrationStyle"></typeparam>
+        /// <param name="type"></param>
         /// <param name="builder"></param>
+        /// <param name="builders"></param>
+        /// <returns></returns>
         protected virtual IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> ApplyBuilders<TLimit, TActivatorData, TRegistrationStyle>(
             Type type,
             IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> builder,
-            IRegistrationRootAttribute attribute,
             IEnumerable<IRegistrationBuilderAttribute> builders)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
-            if (attribute == null)
-                throw new ArgumentNullException(nameof(attribute));
             if (builders == null)
                 throw new ArgumentNullException(nameof(builders));
 
@@ -133,6 +157,23 @@ namespace Cogito.Autofac
                 builder = b.Build(type, builder);
 
             return builder;
+        }
+
+        /// <summary>
+        /// Applies the detected set of builders.
+        /// </summary>
+        /// <typeparam name="TLimit"></typeparam>
+        /// <typeparam name="TActivatorData"></typeparam>
+        /// <typeparam name="TRegistrationStyle"></typeparam>
+        /// <param name="builder"></param>
+        [Obsolete]
+        protected virtual IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> ApplyBuilders<TLimit, TActivatorData, TRegistrationStyle>(
+            Type type,
+            IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> builder,
+            IRegistrationRootAttribute attribute,
+            IEnumerable<IRegistrationBuilderAttribute> builders)
+        {
+            return ApplyBuilders(type, builder, builders);
         }
 
     }
