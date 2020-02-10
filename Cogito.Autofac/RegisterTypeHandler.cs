@@ -99,7 +99,7 @@ namespace Cogito.Autofac
         }
 
         /// <summary>
-        /// 
+        /// Carries out the registration against the container.
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="type"></param>
