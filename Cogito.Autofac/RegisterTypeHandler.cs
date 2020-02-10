@@ -109,6 +109,13 @@ namespace Cogito.Autofac
             Type type,
             IEnumerable<IRegistrationBuilderAttribute> builders)
         {
+            if (builder == null)
+                throw new ArgumentNullException(nameof(builder));
+            if (type is null)
+                throw new ArgumentNullException(nameof(type));
+            if (builders == null)
+                throw new ArgumentNullException(nameof(builders));
+
             if (type.GetTypeInfo().IsGenericType)
                 ApplyBuilders(type, builder.RegisterGeneric(type), builders);
             else
