@@ -17,12 +17,12 @@ namespace Cogito.Autofac.DependencyInjection
         const string COMPONENT_REGISTRY_SERVICE_CACHE_KEY = "Cogito.Autofac.DependencyInjection::Cache";
 
         /// <summary>
-        /// Populates the <see cref="global::Autofac.ContainerBuilder"/> with services registered against the generated <see cref="IServiceCollection"/>.
+        /// Populates the <see cref="ContainerBuilder"/> with services registered against the generated <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="configure"></param>
         /// <returns></returns>
-        public static global::Autofac.ContainerBuilder Populate(this global::Autofac.ContainerBuilder builder, Action<IServiceCollection> configure)
+        public static ContainerBuilder Populate(this ContainerBuilder builder, Action<IServiceCollection> configure)
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
