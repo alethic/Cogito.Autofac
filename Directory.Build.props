@@ -1,11 +1,11 @@
 <Project>
     <PropertyGroup>
         <Authors>Jerome Haltom</Authors>
-        <Company>Jerome Haltom</Company>
-        <RepositoryUrl>https://github.com/wasabii/Cogito.Autofac</RepositoryUrl>
+        <Company>Alethic Solutions</Company>
+        <RepositoryUrl>https://github.com/alethic/Cogito.Autofac</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>autofac</PackageTags>
-        <PackageProjectUrl>https://github.com/wasabii/Cogito.Autofac</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/alethic/Cogito.Autofac</PackageProjectUrl>
         <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
         <PackageIcon>icon.png</PackageIcon>
         <LangVersion>8.0</LangVersion>
