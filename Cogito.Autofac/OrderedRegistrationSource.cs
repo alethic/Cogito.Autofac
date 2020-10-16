@@ -24,10 +24,9 @@ namespace Cogito.Autofac
         /// <param name="service">The service that was requested.</param>
         /// <param name="registrationAccessor">A function that will return existing registrations for a service.</param>
         /// <returns>Registrations providing the service.</returns>
-        public IEnumerable<IComponentRegistration> RegistrationsFor(Service service, Func<Service, IEnumerable<IComponentRegistration>> registrationAccessor)
+        public IEnumerable<IComponentRegistration> RegistrationsFor(Service service, Func<Service, IEnumerable<ServiceRegistration>> registrationAccessor)
         {
-            var typedService = service as IServiceWithType;
-            if (typedService != null)
+            if (service is IServiceWithType typedService)
             {
                 var serviceType = typedService.ServiceType;
                 if (serviceType.IsInstanceOfGenericType(typeof(IOrderedEnumerable<>)))
@@ -38,11 +37,9 @@ namespace Cogito.Autofac
                         .MakeGenericMethod(dependencyType)
                         .Invoke(null, new object[0]);
 
-                    return new[] { registration };
+                    yield return registration;
                 }
             }
-
-            return Enumerable.Empty<IComponentRegistration>();
         }
 
         /// <summary>
