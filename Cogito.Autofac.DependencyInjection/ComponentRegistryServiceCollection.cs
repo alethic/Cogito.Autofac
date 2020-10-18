@@ -6,6 +6,7 @@ using System.Reflection;
 
 using Autofac.Core;
 using Autofac.Core.Registration;
+using Autofac.Features.OpenGenerics;
 
 using Cogito.Collections;
 
@@ -24,16 +25,19 @@ namespace Cogito.Autofac.DependencyInjection
         readonly ComponentRegistryServiceCollectionCache cache;
         readonly List<IComponentRegistration> registered = new List<IComponentRegistration>();
         readonly List<ServiceDescriptor> staged = new List<ServiceDescriptor>();
+        readonly object lifetimeScopeTagForSingletons;
 
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="cache"></param>
-        public ComponentRegistryServiceCollection(IComponentRegistryBuilder builder, ComponentRegistryServiceCollectionCache cache)
+        /// <param name="lifetimeScopeTagForSingletons"></param>
+        public ComponentRegistryServiceCollection(IComponentRegistryBuilder builder, ComponentRegistryServiceCollectionCache cache, object lifetimeScopeTagForSingletons)
         {
             this.builder = builder ?? throw new ArgumentNullException(nameof(builder));
             this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            this.lifetimeScopeTagForSingletons = lifetimeScopeTagForSingletons;
 
             builder.Registered += builder_Registered;
         }
@@ -53,7 +57,7 @@ namespace Cogito.Autofac.DependencyInjection
         /// </summary>
         /// <param name="builder"></param>
         public ComponentRegistryServiceCollection(IComponentRegistryBuilder builder) :
-            this(builder, null)
+            this(builder, null, null)
         {
 
         }
@@ -78,9 +82,9 @@ namespace Cogito.Autofac.DependencyInjection
         void Register(ServiceDescriptor registration)
         {
             if (registration.ServiceType.GetTypeInfo().IsGenericTypeDefinition == false)
-                builder.Register(registration.ToComponentRegistration());
+                builder.Register(registration.ToComponentRegistration(lifetimeScopeTagForSingletons));
             else
-                builder.AddRegistrationSource(registration.ToRegistrationSource());
+                builder.AddRegistrationSource(registration.ToRegistrationSource(builder, lifetimeScopeTagForSingletons));
         }
 
         /// <summary>

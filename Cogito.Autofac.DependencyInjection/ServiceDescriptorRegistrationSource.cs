@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+
 using Autofac.Core;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Cogito.Autofac.DependencyInjection
@@ -29,9 +30,9 @@ namespace Cogito.Autofac.DependencyInjection
 
         public bool IsAdapterForIndividualComponents => false;
 
-        public IEnumerable<IComponentRegistration> RegistrationsFor(Service service, Func<Service, IEnumerable<IComponentRegistration>> registrationAccessor)
+        public IEnumerable<IComponentRegistration> RegistrationsFor(Service service, Func<Service, IEnumerable<ServiceRegistration>> registrations)
         {
-            return parent.RegistrationsFor(service, registrationAccessor);
+            return parent.RegistrationsFor(service, registrations);
         }
 
         public override string ToString()

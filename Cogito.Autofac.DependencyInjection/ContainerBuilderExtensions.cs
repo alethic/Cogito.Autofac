@@ -22,7 +22,7 @@ namespace Cogito.Autofac.DependencyInjection
         /// <param name="builder"></param>
         /// <param name="configure"></param>
         /// <returns></returns>
-        public static ContainerBuilder Populate(this ContainerBuilder builder, Action<IServiceCollection> configure)
+        public static ContainerBuilder Populate(this ContainerBuilder builder, Action<IServiceCollection> configure, object lifetimeScopeTagForSingletons = null)
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
@@ -31,7 +31,7 @@ namespace Cogito.Autofac.DependencyInjection
 
             var cache = (ComponentRegistryServiceCollectionCache)builder.Properties.GetOrAdd(COMPONENT_REGISTRY_SERVICE_CACHE_KEY, _ => new ComponentRegistryServiceCollectionCache());
             builder.Populate(Enumerable.Empty<ServiceDescriptor>());
-            builder.RegisterCallback(b => { using var s = new ComponentRegistryServiceCollection(b, cache); configure(s); s.Flush(); });
+            builder.RegisterCallback(b => { using var s = new ComponentRegistryServiceCollection(b, cache, lifetimeScopeTagForSingletons); configure(s); s.Flush(); });
             return builder;
         }
 
