@@ -36,6 +36,17 @@ namespace Cogito.Autofac.DependencyInjection
         }
 
         /// <summary>
+        /// Populates the <see cref="ContainerBuilder"/> with services registered against the generated <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public static ContainerBuilder Populate(this ContainerBuilder builder, Action<IServiceCollection> configure)
+        {
+            return Populate(builder, configure, null);
+        }
+
+        /// <summary>
         /// Begins a new lifetime scope.
         /// </summary>
         /// <param name="scope"></param>

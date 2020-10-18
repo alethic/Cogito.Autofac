@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -12,8 +11,6 @@ using Autofac.Core.Activators.ProvidedInstance;
 using Autofac.Core.Activators.Reflection;
 using Autofac.Core.Lifetime;
 using Autofac.Core.Registration;
-using Autofac.Core.Resolving.Pipeline;
-using Autofac.Features.OpenGenerics;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -34,8 +31,9 @@ namespace Cogito.Autofac.DependencyInjection
         /// Generates a <see cref="IComponentRegistration"/> that mimics the <see cref="ServiceDescriptor"/>.
         /// </summary>
         /// <param name="service"></param>
+        /// <param name="lifetimeScopeTagForSingletons"></param>
         /// <returns></returns>
-        public static IComponentRegistration ToComponentRegistration(this ServiceDescriptor service, object lifetimeScopeTagForSingletons)
+        public static IComponentRegistration ToComponentRegistration(this ServiceDescriptor service, object lifetimeScopeTagForSingletons = null)
         {
             if (service == null)
                 throw new ArgumentNullException(nameof(service));
@@ -55,9 +53,21 @@ namespace Cogito.Autofac.DependencyInjection
         }
 
         /// <summary>
+        /// Generates a <see cref="IComponentRegistration"/> that mimics the <see cref="ServiceDescriptor"/>.
+        /// </summary>
+        /// <param name="service"></param>
+        /// <returns></returns>
+        public static IComponentRegistration ToComponentRegistration(this ServiceDescriptor service)
+        {
+            return ToComponentRegistration(service, null);
+        }
+
+        /// <summary>
         /// Generates a <see cref="IRegistrationSource"/> that mimics the <see cref="ServiceDescriptor"/>.
         /// </summary>
         /// <param name="service"></param>
+        /// <param name="builder"></param>
+        /// <param name="lifetimeScopeTagForSingletons"></param>
         /// <returns></returns>
         public static IRegistrationSource ToRegistrationSource(this ServiceDescriptor service, IComponentRegistryBuilder builder, object lifetimeScopeTagForSingletons)
         {
@@ -85,6 +95,17 @@ namespace Cogito.Autofac.DependencyInjection
             }
 
             throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Generates a <see cref="IRegistrationSource"/> that mimics the <see cref="ServiceDescriptor"/>.
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static IRegistrationSource ToRegistrationSource(this ServiceDescriptor service, IComponentRegistryBuilder builder)
+        {
+            return ToRegistrationSource(service, null);
         }
 
         /// <summary>
