@@ -1,6 +1,6 @@
 ﻿using Autofac;
 
-namespace Cogito.Autofac
+namespace Cogito.Autofac.Test.NetCore3
 {
 
     public class AssemblyModule : ModuleBase
@@ -8,7 +8,6 @@ namespace Cogito.Autofac
 
         protected override void Register(ContainerBuilder builder)
         {
-            builder.RegisterSource(new OrderedRegistrationSource());
             builder.RegisterFromAttributes(typeof(AssemblyModule).Assembly);
         }
 

@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cogito.Autofac.DependencyIn
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cogito.Autofac.Tests", "Cogito.Autofac.Tests\Cogito.Autofac.Tests.csproj", "{0A381072-ABCC-4FFE-A9BF-2894A5D36CAB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cogito.Autofac.Test.NetCore3", "Cogito.Autofac.Test.NetCore3\Cogito.Autofac.Test.NetCore3.csproj", "{00193750-DDA3-4FD1-B157-DF6AF973FBF7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{0A381072-ABCC-4FFE-A9BF-2894A5D36CAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A381072-ABCC-4FFE-A9BF-2894A5D36CAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A381072-ABCC-4FFE-A9BF-2894A5D36CAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00193750-DDA3-4FD1-B157-DF6AF973FBF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00193750-DDA3-4FD1-B157-DF6AF973FBF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00193750-DDA3-4FD1-B157-DF6AF973FBF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00193750-DDA3-4FD1-B157-DF6AF973FBF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
