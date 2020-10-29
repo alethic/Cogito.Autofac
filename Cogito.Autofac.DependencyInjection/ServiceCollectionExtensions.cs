@@ -72,7 +72,7 @@ namespace Cogito.Autofac.DependencyInjection
         }
 
         /// <summary>
-        /// Provides an implementation of <see cref="IServiceProviderFactory{IServiceCollection}"/> for the Web Host to use internally.
+        /// Provides an implementation of <see cref="IServiceProviderFactory{IServiceCollection}"/>.
         /// </summary>
         class AutofacHostingServiceProviderFactory : IServiceProviderFactory<IServiceCollection>
         {
