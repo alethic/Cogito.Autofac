@@ -6,7 +6,6 @@ using System.Reflection;
 
 using Autofac.Core;
 using Autofac.Core.Registration;
-using Autofac.Features.OpenGenerics;
 
 using Cogito.Collections;
 
