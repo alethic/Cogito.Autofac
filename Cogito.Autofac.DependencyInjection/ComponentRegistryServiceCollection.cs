@@ -5,6 +5,8 @@ using System.Linq;
 using System.Reflection;
 
 using Autofac.Core;
+using Autofac.Core.Activators.ProvidedInstance;
+using Autofac.Core.Activators.Reflection;
 using Autofac.Core.Registration;
 
 using Cogito.Collections;
@@ -100,15 +102,15 @@ namespace Cogito.Autofac.DependencyInjection
             {
                 if (registration.Lifetime is global::Autofac.Core.Lifetime.RootScopeLifetime)
                     foreach (var service in registration.Services.OfType<TypedService>())
-                        yield return ServiceDescriptor.Singleton(service.ServiceType, _ => throw new NotSupportedException());
+                        yield return ToSingletonServiceDescriptor(registration, service);
 
                 if (registration.Lifetime is global::Autofac.Core.Lifetime.CurrentScopeLifetime)
                     foreach (var service in registration.Services.OfType<TypedService>())
-                        yield return ServiceDescriptor.Scoped(service.ServiceType, _ => throw new NotSupportedException());
+                        yield return ToScopedServiceDescriptor(registration, service);
 
                 if (registration.Lifetime is global::Autofac.Core.Lifetime.MatchingScopeLifetime)
                     foreach (var service in registration.Services.OfType<TypedService>())
-                        yield return ServiceDescriptor.Scoped(service.ServiceType, _ => throw new NotSupportedException());
+                        yield return ToScopedServiceDescriptor(registration, service);
             }
 
             if (registration.Sharing == InstanceSharing.None)
@@ -116,6 +118,50 @@ namespace Cogito.Autofac.DependencyInjection
                 foreach (var service in registration.Services.OfType<TypedService>())
                     yield return ServiceDescriptor.Transient(service.ServiceType, _ => throw new NotSupportedException());
             }
+        }
+
+        /// <summary>
+        /// Creates a singleton service descsriptor from the specified registration for the specified service.
+        /// </summary>
+        /// <param name="registration"></param>
+        /// <param name="service"></param>
+        /// <returns></returns>
+        ServiceDescriptor ToSingletonServiceDescriptor(IComponentRegistration registration, TypedService service)
+        {
+            if (registration.Activator is ReflectionActivator r)
+                return ServiceDescriptor.Singleton(service.ServiceType, r.LimitType);
+            else if (registration.Activator is ProvidedInstanceActivator i)
+                return ServiceDescriptor.Singleton(service.ServiceType, typeof(ProvidedInstanceActivator).GetField("_instance", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(i));
+            else
+                return ServiceDescriptor.Singleton(service.ServiceType, _ => throw new NotSupportedException());
+        }
+
+        /// <summary>
+        /// Creates a singleton service descsriptor from the specified registration for the specified service.
+        /// </summary>
+        /// <param name="registration"></param>
+        /// <param name="service"></param>
+        /// <returns></returns>
+        ServiceDescriptor ToScopedServiceDescriptor(IComponentRegistration registration, TypedService service)
+        {
+            if (registration.Activator is ReflectionActivator r)
+                return ServiceDescriptor.Scoped(service.ServiceType, r.LimitType);
+            else
+                return ServiceDescriptor.Scoped(service.ServiceType, _ => throw new NotSupportedException());
+        }
+
+        /// <summary>
+        /// Creates a singleton service descsriptor from the specified registration for the specified service.
+        /// </summary>
+        /// <param name="registration"></param>
+        /// <param name="service"></param>
+        /// <returns></returns>
+        ServiceDescriptor ToTransientServiceDescriptor(IComponentRegistration registration, TypedService service)
+        {
+            if (registration.Activator is ReflectionActivator r)
+                return ServiceDescriptor.Transient(service.ServiceType, r.LimitType);
+            else
+                return ServiceDescriptor.Transient(service.ServiceType, _ => throw new NotSupportedException());
         }
 
         /// <summary>
