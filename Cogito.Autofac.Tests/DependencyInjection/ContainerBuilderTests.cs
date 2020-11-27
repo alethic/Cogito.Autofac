@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
@@ -26,6 +27,16 @@ namespace Cogito.Autofac.Tests.DependencyInjection
             b.RegisterInstance(new object());
             b.Populate(s => s.AddSingleton(new object()));
             b.Populate(s => s.Should().HaveCount(8));
+            var c = b.Build();
+        }
+
+        [TestMethod]
+        public void Should_preserve_instance_descriptor()
+        {
+            var o = new object();
+            var b = new global::Autofac.ContainerBuilder();
+            b.RegisterInstance(o);
+            b.Populate(s => s.Single(i => i.ImplementationInstance == o).ImplementationInstance.Should().Be(o));
             var c = b.Build();
         }
 
