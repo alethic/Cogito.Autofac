@@ -166,7 +166,7 @@ namespace Cogito.Autofac.DependencyInjection
             if (registration.Activator is ReflectionActivator r)
                 return ServiceDescriptor.Transient(service.ServiceType, r.LimitType);
             else if (registration.Activator is DelegateActivator d)
-                return ServiceDescriptor.Scoped(service.ServiceType, svc => throw new NotSupportedException("Delegate activators not supported for transient services."));
+                return ServiceDescriptor.Transient(service.ServiceType, svc => throw new NotSupportedException("Delegate activators not supported for transient services."));
             else
                 return ServiceDescriptor.Transient(service.ServiceType, _ => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
         }
