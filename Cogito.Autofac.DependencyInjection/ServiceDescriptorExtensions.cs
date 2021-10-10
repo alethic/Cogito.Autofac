@@ -39,7 +39,7 @@ namespace Cogito.Autofac.DependencyInjection
                 throw new ArgumentNullException(nameof(service));
 
             if (service.ServiceType.GetTypeInfo().IsGenericTypeDefinition)
-                throw new NotSupportedException();
+                throw new NotSupportedException("Cannot convert generic type definition to component registration.");
 
             return new ServiceDescriptorComponentRegistration(
                 Guid.NewGuid(),
@@ -77,7 +77,7 @@ namespace Cogito.Autofac.DependencyInjection
             if (service.ServiceType.GetTypeInfo().IsGenericTypeDefinition)
             {
                 if (service.ImplementationType == null)
-                    throw new NotSupportedException("Cannot register open generic types without implementation type.");
+                    throw new NotSupportedException("No implementation type.");
 
                 var b = (IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle>)CreateRegistrationBuilderMethod.Invoke(null, new object[] { service.ImplementationType });
                 var s = (IRegistrationSource)Activator.CreateInstance(
@@ -94,7 +94,7 @@ namespace Cogito.Autofac.DependencyInjection
                 return s;
             }
 
-            throw new NotSupportedException();
+            throw new NotSupportedException("Cannot convert non-generic ServiceDescriptor to RegistrationSource.");
         }
 
         /// <summary>
