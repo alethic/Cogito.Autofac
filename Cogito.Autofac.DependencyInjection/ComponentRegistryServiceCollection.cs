@@ -134,7 +134,7 @@ namespace Cogito.Autofac.DependencyInjection
             else if (registration.Activator is ProvidedInstanceActivator i)
                 return ServiceDescriptor.Singleton(service.ServiceType, typeof(ProvidedInstanceActivator).GetField("_instance", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(i));
             else if (registration.Activator is DelegateActivator d)
-                return ServiceDescriptor.Singleton(service.ServiceType, svc => throw new NotSupportedException("Delegate activators not supported."));
+                return ServiceDescriptor.Singleton(service.ServiceType, svc => throw new NotSupportedException("Delegate activators not supported for singleton services."));
             else
                 return ServiceDescriptor.Singleton(service.ServiceType, _ => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
         }
@@ -150,7 +150,7 @@ namespace Cogito.Autofac.DependencyInjection
             if (registration.Activator is ReflectionActivator r)
                 return ServiceDescriptor.Scoped(service.ServiceType, r.LimitType);
             else if (registration.Activator is DelegateActivator d)
-                return ServiceDescriptor.Scoped(service.ServiceType, svc => throw new NotSupportedException("Delegate activators not supported."));
+                return ServiceDescriptor.Scoped(service.ServiceType, svc => throw new NotSupportedException("Delegate activators not supported for Scoped services."));
             else
                 return ServiceDescriptor.Scoped(service.ServiceType, _ => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
         }
@@ -166,7 +166,7 @@ namespace Cogito.Autofac.DependencyInjection
             if (registration.Activator is ReflectionActivator r)
                 return ServiceDescriptor.Transient(service.ServiceType, r.LimitType);
             else if (registration.Activator is DelegateActivator d)
-                return ServiceDescriptor.Scoped(service.ServiceType, svc => throw new NotSupportedException("Delegate activators not supported."));
+                return ServiceDescriptor.Scoped(service.ServiceType, svc => throw new NotSupportedException("Delegate activators not supported for transient services."));
             else
                 return ServiceDescriptor.Transient(service.ServiceType, _ => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
         }
