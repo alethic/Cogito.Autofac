@@ -134,7 +134,7 @@ namespace Cogito.Autofac.DependencyInjection
             else if (registration.Activator is ProvidedInstanceActivator i)
                 return ServiceDescriptor.Singleton(service.ServiceType, typeof(ProvidedInstanceActivator).GetField("_instance", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(i));
             else if (registration.Activator is DelegateActivator d)
-                return ServiceDescriptor.Singleton(service.ServiceType, svc => throw new NotSupportedException());
+                return ServiceDescriptor.Singleton(service.ServiceType, svc => throw new NotSupportedException("Delegate activators not supported."));
             else
                 return ServiceDescriptor.Singleton(service.ServiceType, _ => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
         }
@@ -150,7 +150,7 @@ namespace Cogito.Autofac.DependencyInjection
             if (registration.Activator is ReflectionActivator r)
                 return ServiceDescriptor.Scoped(service.ServiceType, r.LimitType);
             else if (registration.Activator is DelegateActivator d)
-                return ServiceDescriptor.Scoped(service.ServiceType, svc => throw new NotSupportedException());
+                return ServiceDescriptor.Scoped(service.ServiceType, svc => throw new NotSupportedException("Delegate activators not supported."));
             else
                 return ServiceDescriptor.Scoped(service.ServiceType, _ => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
         }
@@ -166,7 +166,7 @@ namespace Cogito.Autofac.DependencyInjection
             if (registration.Activator is ReflectionActivator r)
                 return ServiceDescriptor.Transient(service.ServiceType, r.LimitType);
             else if (registration.Activator is DelegateActivator d)
-                return ServiceDescriptor.Scoped(service.ServiceType, svc => throw new NotSupportedException());
+                return ServiceDescriptor.Scoped(service.ServiceType, svc => throw new NotSupportedException("Delegate activators not supported."));
             else
                 return ServiceDescriptor.Transient(service.ServiceType, _ => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
         }
@@ -210,7 +210,7 @@ namespace Cogito.Autofac.DependencyInjection
         public ServiceDescriptor this[int index]
         {
             get => ServiceDescriptors.ElementAt(index);
-            set => throw new NotSupportedException();
+            set => throw new NotSupportedException("Cannot set indexes on Autofac ServiceCollection.");
         }
 
         /// <summary>
@@ -237,7 +237,7 @@ namespace Cogito.Autofac.DependencyInjection
 
         public void Clear()
         {
-            throw new NotSupportedException();
+            throw new NotSupportedException("Cannot clear Autofac ServiceCollection.");
         }
 
         public bool Contains(ServiceDescriptor item)
@@ -266,7 +266,7 @@ namespace Cogito.Autofac.DependencyInjection
 
         public void Insert(int index, ServiceDescriptor item)
         {
-            throw new NotSupportedException();
+            throw new NotSupportedException("Cannot insert into Autofac ServiceCollection.");
         }
 
         public bool Remove(ServiceDescriptor item)
