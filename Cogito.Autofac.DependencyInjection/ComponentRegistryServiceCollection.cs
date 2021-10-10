@@ -133,7 +133,7 @@ namespace Cogito.Autofac.DependencyInjection
             else if (registration.Activator is ProvidedInstanceActivator i)
                 return ServiceDescriptor.Singleton(service.ServiceType, typeof(ProvidedInstanceActivator).GetField("_instance", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(i));
             else
-                return ServiceDescriptor.Singleton(service.ServiceType, _ => throw new NotSupportedException());
+                return ServiceDescriptor.Singleton(service.ServiceType, _ => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
         }
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace Cogito.Autofac.DependencyInjection
             if (registration.Activator is ReflectionActivator r)
                 return ServiceDescriptor.Scoped(service.ServiceType, r.LimitType);
             else
-                return ServiceDescriptor.Scoped(service.ServiceType, _ => throw new NotSupportedException());
+                return ServiceDescriptor.Scoped(service.ServiceType, _ => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace Cogito.Autofac.DependencyInjection
             if (registration.Activator is ReflectionActivator r)
                 return ServiceDescriptor.Transient(service.ServiceType, r.LimitType);
             else
-                return ServiceDescriptor.Transient(service.ServiceType, _ => throw new NotSupportedException());
+                return ServiceDescriptor.Transient(service.ServiceType, _ => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
         }
 
         /// <summary>
