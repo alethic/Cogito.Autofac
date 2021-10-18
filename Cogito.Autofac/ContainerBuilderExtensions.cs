@@ -16,7 +16,7 @@ namespace Cogito.Autofac
     public static class ContainerBuilderExtensions
     {
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0_OR_GREATER || NETCOREAPP3_0_OR_GREATER || NET5_0_OR_GREATER
 
         /// <summary>
         /// Registers all modules found in all assemblies.
