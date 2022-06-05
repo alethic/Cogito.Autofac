@@ -29,9 +29,9 @@ namespace Cogito.Autofac.DependencyInjection
             if (configure == null)
                 throw new ArgumentNullException(nameof(configure));
 
-            var cache = (ComponentRegistryServiceCollectionCache)builder.Properties.GetOrAdd(COMPONENT_REGISTRY_SERVICE_CACHE_KEY, _ => new ComponentRegistryServiceCollectionCache());
+            var cache = (ComponentRegistryServiceCollectionCache)builder.ComponentRegistryBuilder.Properties.GetOrAdd(COMPONENT_REGISTRY_SERVICE_CACHE_KEY, _ => new ComponentRegistryServiceCollectionCache(builder.ComponentRegistryBuilder));
             builder.Populate(Enumerable.Empty<ServiceDescriptor>());
-            builder.RegisterCallback(b => { using var s = new ComponentRegistryServiceCollection(b, cache, lifetimeScopeTagForSingletons); configure(s); s.Flush(); });
+            builder.RegisterCallback(b => { configure(new ComponentRegistryServiceCollection(cache, lifetimeScopeTagForSingletons)); cache.Flush(); });
             return builder;
         }
 
@@ -48,9 +48,9 @@ namespace Cogito.Autofac.DependencyInjection
             if (configure == null)
                 throw new ArgumentNullException(nameof(configure));
 
-            var cache = (ComponentRegistryServiceCollectionCache)builder.Properties.GetOrAdd(COMPONENT_REGISTRY_SERVICE_CACHE_KEY, _ => new ComponentRegistryServiceCollectionCache());
+            var cache = (ComponentRegistryServiceCollectionCache)builder.ComponentRegistryBuilder.Properties.GetOrAdd(COMPONENT_REGISTRY_SERVICE_CACHE_KEY, _ => new ComponentRegistryServiceCollectionCache(builder.ComponentRegistryBuilder));
             builder.Populate(Enumerable.Empty<ServiceDescriptor>());
-            builder.RegisterCallback(b => { using var s = new ComponentRegistryServiceCollection(b, cache, lifetimeScopeTagForSingletons); configure(s); s.Flush(); });
+            builder.RegisterCallback(b => { configure(new ComponentRegistryServiceCollection(cache, lifetimeScopeTagForSingletons)); cache.Flush(); });
             return builder;
         }
 

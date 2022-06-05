@@ -10,6 +10,7 @@ using Cogito.Autofac.DependencyInjection;
 using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -26,8 +27,8 @@ namespace Cogito.Autofac.Tests.DependencyInjection
             var b = new global::Autofac.ContainerBuilder();
             b.RegisterInstance(new object());
             b.Populate(s => s.AddSingleton(new object()));
-            b.Populate(s => s.Should().HaveCount(8));
             var c = b.Build();
+            c.ComponentRegistry.Registrations.Should().HaveCount(5);
         }
 
         [TestMethod]
@@ -36,7 +37,7 @@ namespace Cogito.Autofac.Tests.DependencyInjection
             var o = new object();
             var b = new global::Autofac.ContainerBuilder();
             b.RegisterInstance(o);
-            b.Populate(s => s.Single(i => i.ImplementationInstance == o).ImplementationInstance.Should().Be(o));
+            b.Populate(s => s.Single(i => i.ImplementationInstance == o).ImplementationInstance.Should().BeSameAs(o));
             var c = b.Build();
         }
 
@@ -160,7 +161,54 @@ namespace Cogito.Autofac.Tests.DependencyInjection
             var z = scope.Resolve<TestOptions>();
         }
 
+        [TestMethod]
+        public void Should_not_add_when_tryadd()
+        {
+            var b = new global::Autofac.ContainerBuilder();
+            b.RegisterType<TestOptions>().SingleInstance();
+            b.Populate(s => s.TryAddSingleton<TestOptions>());
+            var c = b.Build();
+            var o = c.Resolve<IEnumerable<TestOptions>>();
+            o.Should().HaveCount(1);
+        }
+
+        [TestMethod]
+        public void Should_not_add_when_tryaddenumerable_with_same_instance()
+        {
+            var b = new global::Autofac.ContainerBuilder();
+            b.RegisterType<TestOptions>().SingleInstance();
+            b.Populate(s => s.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(TestOptions))));
+            var c = b.Build();
+            var o = c.Resolve<IEnumerable<TestOptions>>();
+            o.Should().HaveCount(1);
+        }
+
+        [TestMethod]
+        public void Should_add_when_tryaddenumerable_with_different_instance()
+        {
+            var b = new global::Autofac.ContainerBuilder();
+            b.RegisterType<TestOptions>().As<object>().SingleInstance();
+            b.Populate(s => s.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(object), typeof(TestOptions1))));
+            var c = b.Build();
+            var o = c.Resolve<IEnumerable<object>>();
+            o.Should().HaveCount(2);
+        }
+
         class TestOptions
+        {
+
+            public string Value { get; set; }
+
+        }
+
+        class TestOptions1
+        {
+
+            public string Value { get; set; }
+
+        }
+
+        class TestOptions2
         {
 
             public string Value { get; set; }
