@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 using Autofac;
@@ -129,9 +130,26 @@ namespace Cogito.Autofac.DependencyInjection
                     EmptyParameters);
 
             if (service.ImplementationFactory != null)
-                return new DelegateActivator(
-                    service.ServiceType,
-                    (c, p) => service.ImplementationFactory(c.Resolve<IServiceProvider>()));
+            {
+                // generate a factory method that has the correct return type
+                // TryAddEnumerable actually probs the return type of the function at runtime to determine equality
+                // so our method needs to be translatable back to that format
+                var typeArguments = service.ImplementationFactory.GetType().GenericTypeArguments;
+                var implementationType = typeArguments[1];
+                var componentContextParameter = Expression.Parameter(typeof(IComponentContext), "context");
+                var parameterParameter = Expression.Parameter(typeof(IEnumerable<Parameter>), "parameters");
+                var resolveMethodInfo = typeof(ResolutionExtensions).GetMethods().First(i => i.Name == "Resolve" && i.IsGenericMethodDefinition && i.GetGenericArguments().Length == 1);
+                var func = Expression.Lambda(
+                    typeof(Func<,,>).MakeGenericType(typeof(IComponentContext), typeof(IEnumerable<Parameter>), implementationType),
+                    Expression.Invoke(
+                        Expression.Constant(service.ImplementationFactory),
+                        Expression.Call(resolveMethodInfo.MakeGenericMethod(typeof(IServiceProvider)), componentContextParameter)),
+                    componentContextParameter,
+                    parameterParameter);
+
+                // generate activator
+                return new DelegateActivator(service.ServiceType, (Func<IComponentContext, IEnumerable<Parameter>, object>)func.Compile());
+            }
 
             throw new InvalidOperationException();
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 using Autofac.Core;
@@ -171,7 +172,7 @@ namespace Cogito.Autofac.DependencyInjection
             else if (registration.Activator is ProvidedInstanceActivator i)
                 return ServiceDescriptor.Singleton(service.ServiceType, typeof(ProvidedInstanceActivator).GetField("_instance", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(i));
             else if (registration.Activator is DelegateActivator d)
-                return ServiceDescriptor.Singleton(service.ServiceType, svc => throw new NotSupportedException("Delegate activators not supported for singleton services."));
+                return ServiceDescriptor.Singleton(service.ServiceType, GenerateImplementationFactory(d, d.LimitType));
             else
                 return ServiceDescriptor.Singleton(service.ServiceType, svc => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
         }
@@ -187,7 +188,7 @@ namespace Cogito.Autofac.DependencyInjection
             if (registration.Activator is ReflectionActivator r)
                 return ServiceDescriptor.Scoped(service.ServiceType, r.LimitType);
             else if (registration.Activator is DelegateActivator d)
-                return ServiceDescriptor.Scoped(service.ServiceType, svc => throw new NotSupportedException("Delegate activators not supported for Scoped services."));
+                return ServiceDescriptor.Scoped(service.ServiceType, GenerateImplementationFactory(d, d.LimitType));
             else
                 return ServiceDescriptor.Scoped(service.ServiceType, _ => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
         }
@@ -203,9 +204,38 @@ namespace Cogito.Autofac.DependencyInjection
             if (registration.Activator is ReflectionActivator r)
                 return ServiceDescriptor.Transient(service.ServiceType, r.LimitType);
             else if (registration.Activator is DelegateActivator d)
-                return ServiceDescriptor.Transient(service.ServiceType, svc => throw new NotSupportedException("Delegate activators not supported for transient services."));
+                return ServiceDescriptor.Transient(service.ServiceType, GenerateImplementationFactory(d, d.LimitType));
             else
-                return ServiceDescriptor.Transient(service.ServiceType, _ => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
+                return ServiceDescriptor.Transient(service.ServiceType, svc => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
+        }
+
+        /// <summary>
+        /// Transforms a <see cref="DelegateActivator"/> into an implementation factory with the appropriate delegate type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="activator"></param>
+        /// <returns></returns>
+        Func<IServiceProvider, object> GenerateImplementationFactory(DelegateActivator activator, Type returnType)
+        {
+            // factory function can't actually run, but does have the right type signature
+            var func = Expression.Lambda(
+                typeof(Func<,>).MakeGenericType(typeof(IServiceProvider), returnType),
+                Expression.Block(
+                    Expression.Call(typeof(ComponentRegistryServiceCollectionCache), nameof(ThrowNotSupportedException), Array.Empty<Type>(), Expression.Constant("Delegate activators not supported.")),
+                    Expression.Convert(Expression.Constant(null), returnType)),
+                Expression.Parameter(typeof(IServiceProvider), "provider"));
+
+            return (Func<IServiceProvider, object>)func.Compile();
+        }
+
+        /// <summary>
+        /// Throws a <see cref="NotSupportedException"/> with the given method.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <exception cref="NotSupportedException"></exception>
+        static void ThrowNotSupportedException(string message)
+        {
+            throw new NotSupportedException(message);
         }
 
         /// <summary>

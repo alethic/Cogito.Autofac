@@ -13,6 +13,10 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+#if NETCOREAPP3_1_OR_GREATER
+using Microsoft.AspNetCore.Routing;
+#endif
+
 namespace Cogito.Autofac.Tests.DependencyInjection
 {
 
@@ -203,6 +207,24 @@ namespace Cogito.Autofac.Tests.DependencyInjection
             var z = c.Resolve<IEnumerable<IOptionsFactory<object>>>();
             z.Should().HaveCount(1);
         }
+
+#if NETCOREAPP3_1_OR_GREATER
+
+        [TestMethod]
+        public void Should_not_insert_duplicate_route_options()
+        {
+            var b = new global::Autofac.ContainerBuilder();
+            b.Populate(s => s.AddOptions());
+            b.Populate(s => s.AddRouting());
+            b.Populate(s => s.AddRouting());
+            var c = b.Build();
+            var z = c.Resolve<IEnumerable<IConfigureOptions<RouteOptions>>>();
+            z.Should().HaveCount(1);
+            var e = c.Resolve<EndpointDataSource>();
+            var o = c.Resolve<IOptions<RouteOptions>>();
+        }
+
+#endif
 
         class TestOptions
         {
