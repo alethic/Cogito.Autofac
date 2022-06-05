@@ -194,12 +194,14 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         }
 
         [TestMethod]
-        public void Foo()
+        public void Should_not_insert_duplicate_options()
         {
             var b = new global::Autofac.ContainerBuilder();
             b.Populate(s => s.AddOptions());
             b.Populate(s => s.AddOptions());
             var c = b.Build();
+            var z = c.Resolve<IEnumerable<IOptionsFactory<object>>>();
+            z.Should().HaveCount(1);
         }
 
         class TestOptions
