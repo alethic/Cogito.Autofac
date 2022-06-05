@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Autofac;
-using Autofac.Extensions.DependencyInjection;
 
 using Cogito.Autofac.DependencyInjection;
 
