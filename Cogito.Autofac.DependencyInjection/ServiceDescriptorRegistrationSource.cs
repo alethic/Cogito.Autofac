@@ -15,14 +15,14 @@ namespace Cogito.Autofac.DependencyInjection
     {
 
         readonly IRegistrationSource parent;
-        readonly ServiceDescriptor serviceDescriptor;
+        readonly ServiceDescriptor[] serviceDescriptor;
 
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
         /// <param name="parent"></param>
         /// <param name="serviceDescriptor"></param>
-        public ServiceDescriptorRegistrationSource(IRegistrationSource parent, ServiceDescriptor serviceDescriptor)
+        public ServiceDescriptorRegistrationSource(IRegistrationSource parent, ServiceDescriptor[] serviceDescriptor)
         {
             this.parent = parent ?? throw new ArgumentNullException(nameof(parent));
             this.serviceDescriptor = serviceDescriptor ?? throw new ArgumentNullException(nameof(serviceDescriptor));
@@ -43,7 +43,7 @@ namespace Cogito.Autofac.DependencyInjection
         /// <summary>
         /// Gets the originally assigned descriptor.
         /// </summary>
-        public ServiceDescriptor ServiceDescriptors => serviceDescriptor;
+        public ServiceDescriptor[] ServiceDescriptors => serviceDescriptor;
 
     }
 

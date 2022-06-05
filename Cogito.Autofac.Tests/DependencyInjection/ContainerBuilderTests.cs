@@ -193,6 +193,15 @@ namespace Cogito.Autofac.Tests.DependencyInjection
             o.Should().HaveCount(2);
         }
 
+        [TestMethod]
+        public void Foo()
+        {
+            var b = new global::Autofac.ContainerBuilder();
+            b.Populate(s => s.AddOptions());
+            b.Populate(s => s.AddOptions());
+            var c = b.Build();
+        }
+
         class TestOptions
         {
 

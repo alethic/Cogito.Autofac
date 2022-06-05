@@ -91,7 +91,8 @@ namespace Cogito.Autofac.DependencyInjection
                     b.ResolvePipeline.Clone(),
                     new ReflectionActivatorData(service.ImplementationType));
 
-                return s;
+                // wrap in custom registration source to keep track of descriptor
+                return new ServiceDescriptorRegistrationSource(s, new[] { service });
             }
 
             throw new NotSupportedException("Cannot convert non-generic ServiceDescriptor to RegistrationSource.");

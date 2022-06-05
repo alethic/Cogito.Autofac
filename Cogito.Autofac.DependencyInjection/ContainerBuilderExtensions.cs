@@ -29,8 +29,7 @@ namespace Cogito.Autofac.DependencyInjection
             if (configure == null)
                 throw new ArgumentNullException(nameof(configure));
 
-            var cache = (ComponentRegistryServiceCollectionCache)builder.ComponentRegistryBuilder.Properties.GetOrAdd(COMPONENT_REGISTRY_SERVICE_CACHE_KEY, _ => new ComponentRegistryServiceCollectionCache(builder.ComponentRegistryBuilder));
-            builder.Populate(Enumerable.Empty<ServiceDescriptor>());
+            var cache = (ComponentRegistryServiceCollectionCache)builder.ComponentRegistryBuilder.Properties.GetOrAdd(COMPONENT_REGISTRY_SERVICE_CACHE_KEY, _ => { builder.Populate(Enumerable.Empty<ServiceDescriptor>()); return new ComponentRegistryServiceCollectionCache(builder.ComponentRegistryBuilder); });
             builder.RegisterCallback(b => { configure(new ComponentRegistryServiceCollection(cache, lifetimeScopeTagForSingletons)); cache.Flush(); });
             return builder;
         }

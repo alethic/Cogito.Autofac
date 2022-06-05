@@ -8,6 +8,7 @@ using Autofac.Core.Activators.Delegate;
 using Autofac.Core.Activators.ProvidedInstance;
 using Autofac.Core.Activators.Reflection;
 using Autofac.Core.Registration;
+using Autofac.Features.Metadata;
 
 using Cogito.Collections;
 
@@ -23,9 +24,11 @@ namespace Cogito.Autofac.DependencyInjection
     {
 
         readonly IComponentRegistryBuilder builder;
-        readonly List<IComponentRegistration> registered = new List<IComponentRegistration>();
+        readonly List<object> registered = new List<object>();
         readonly List<(ServiceDescriptor, object)> staged = new List<(ServiceDescriptor, object)>();
         readonly Dictionary<Guid, ServiceDescriptor[]> components = new Dictionary<Guid, ServiceDescriptor[]>();
+        readonly Dictionary<IRegistrationSource, ServiceDescriptor[]> sources = new Dictionary<IRegistrationSource, ServiceDescriptor[]>();
+        List<ServiceDescriptor> descriptors = new List<ServiceDescriptor>();
 
         /// <summary>
         /// Initializes a new instance.
@@ -37,12 +40,8 @@ namespace Cogito.Autofac.DependencyInjection
         {
             this.builder = builder;
             this.builder.Registered += builder_Registered;
+            this.builder.RegistrationSourceAdded += builder_RegistrationSourceAdded;
         }
-
-        /// <summary>
-        /// Mapping of component ID to resulting <see cref="ServiceDescriptor"/> instances.
-        /// </summary>
-        public IDictionary<Guid, ServiceDescriptor[]> Components => components;
 
         /// <summary>
         /// Invoked when a component is registered with the underlying builder.
@@ -52,7 +51,24 @@ namespace Cogito.Autofac.DependencyInjection
         void builder_Registered(object sender, ComponentRegisteredEventArgs args)
         {
             registered.Add(args.ComponentRegistration);
+            descriptors = null;
         }
+
+        /// <summary>
+        /// Invoked when a source is registered with the underlying builder.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        void builder_RegistrationSourceAdded(object sender, RegistrationSourceAddedEventArgs args)
+        {
+            registered.Add(args.RegistrationSource);
+            descriptors = null;
+        }
+
+        /// <summary>
+        /// Gets the full set of service descriptors that exist in the underlying container builder.
+        /// </summary>
+        List<ServiceDescriptor> ServiceDescriptors => descriptors ??= registered.SelectMany(i => GetServiceDescriptors(i)).Concat(staged.Select(i => i.Item1)).ToList();
 
         /// <summary>
         /// Flushes all staged registrations to the registry.
@@ -65,6 +81,7 @@ namespace Cogito.Autofac.DependencyInjection
 
             // clear the staging area
             staged.Clear();
+            descriptors = null;
         }
 
         /// <summary>
@@ -78,6 +95,35 @@ namespace Cogito.Autofac.DependencyInjection
                 builder.Register(registration.ToComponentRegistration(lifetimeScopeTagForSingletons));
             else
                 builder.AddRegistrationSource(registration.ToRegistrationSource(builder, lifetimeScopeTagForSingletons));
+        }
+
+        /// <summary>
+        /// Obtains fake <see cref="ServiceDescriptor"/> entries for the given <see cref="IRegistrationSource"/>.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        /// <exception cref="NotSupportedException"></exception>
+        IEnumerable<ServiceDescriptor> CreateServiceDescriptors(IRegistrationSource source)
+        {
+            switch (source)
+            {
+                case ImplicitRegistrationSource implicitRegistrationSource:
+                    yield return ServiceDescriptor.Transient((Type)typeof(ImplicitRegistrationSource).GetField("_type", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(implicitRegistrationSource), svc => throw new NotSupportedException("Registration sources cannot be activated."));
+                    break;
+                case IRegistrationSource collectionRegistrationSource when collectionRegistrationSource.GetType().FullName == "Autofac.Features.Collections.CollectionRegistrationSource":
+                    yield break;
+                case IRegistrationSource lazyWithMetadataRegistrationSource when lazyWithMetadataRegistrationSource.GetType().FullName == "Autofac.Features.LazyDependencies.LazyWithMetadataRegistrationSource":
+                    yield return ServiceDescriptor.Transient(typeof(Lazy<,>), svc => throw new NotSupportedException("Activators not supported for artificial registration source."));
+                    break;
+                case IRegistrationSource stronglyTypedMetaRegistrationSource when stronglyTypedMetaRegistrationSource.GetType().FullName == "Autofac.Features.Metadata.StronglyTypedMetaRegistrationSource":
+                    yield return ServiceDescriptor.Transient(typeof(Meta<,>), svc => throw new NotSupportedException("Activators not supported for artificial registration source."));
+                    break;
+                case IRegistrationSource generatedFactoryRegistrationSource when generatedFactoryRegistrationSource.GetType().FullName == "Autofac.Features.GeneratedFactories.GeneratedFactoryRegistrationSource":
+                    yield return ServiceDescriptor.Transient(typeof(Func<>), svc => throw new NotSupportedException("Activators not supported for artificial registration source."));
+                    break;
+                default:
+                    yield break;
+            }
         }
 
         /// <summary>
@@ -127,7 +173,7 @@ namespace Cogito.Autofac.DependencyInjection
             else if (registration.Activator is DelegateActivator d)
                 return ServiceDescriptor.Singleton(service.ServiceType, svc => throw new NotSupportedException("Delegate activators not supported for singleton services."));
             else
-                return ServiceDescriptor.Singleton(service.ServiceType, _ => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
+                return ServiceDescriptor.Singleton(service.ServiceType, svc => throw new NotSupportedException($"Unknown Activator: {registration.Activator.GetType()}"));
         }
 
         /// <summary>
@@ -165,32 +211,26 @@ namespace Cogito.Autofac.DependencyInjection
         /// <summary>
         /// Obtains fake <see cref="ServiceDescriptor"/> entries for the given <see cref="IComponentRegistration"/>.
         /// </summary>
-        /// <param name="registration"></param>
+        /// <param name="o"></param>
         /// <returns></returns>
-        IEnumerable<ServiceDescriptor> GetServiceDescriptors(IComponentRegistration registration)
+        IEnumerable<ServiceDescriptor> GetServiceDescriptors(object o)
         {
-            if (registration == null)
-                throw new ArgumentNullException(nameof(registration));
+            if (o == null)
+                throw new ArgumentNullException(nameof(o));
 
-            if (registration is ServiceDescriptorComponentRegistration serviceDescriptorRegistration)
+            if (o is ServiceDescriptorComponentRegistration serviceDescriptorRegistration)
                 yield return serviceDescriptorRegistration.ServiceDescriptor;
-            else
-                foreach (var descriptor in Components.GetOrAdd(registration.Id, _ => CreateServiceDescriptors(registration).ToArray()))
+            else if (o is IComponentRegistration registration)
+                foreach (var descriptor in components.GetOrAdd(registration.Id, _ => CreateServiceDescriptors(registration).ToArray()))
                     yield return descriptor;
-        }
-
-        /// <summary>
-        /// Obtains fake <see cref="ServiceDescriptor"/> entries for the given <see cref="IRegistrationSource"/>.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        IEnumerable<ServiceDescriptor> GetServiceDescriptors(IRegistrationSource source)
-        {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
-            if (source is ServiceDescriptorRegistrationSource serviceDescriptorSource)
-                yield return serviceDescriptorSource.ServiceDescriptors;
+            else if (o is ServiceDescriptorRegistrationSource serviceDescriptorRegistrationSource)
+                foreach (var descriptor in serviceDescriptorRegistrationSource.ServiceDescriptors)
+                    yield return descriptor;
+            else if (o is IRegistrationSource source)
+                foreach (var descriptor in sources.GetOrAdd(source, _ => CreateServiceDescriptors(source).ToArray()))
+                    yield return descriptor;
+            else
+                yield break;
         }
 
         /// <summary>
@@ -219,6 +259,7 @@ namespace Cogito.Autofac.DependencyInjection
                 throw new ArgumentNullException(nameof(service));
 
             staged.Add((service, lifetimeScopeTagForSingletons));
+            descriptors = null;
         }
 
         public void Clear()
@@ -228,14 +269,12 @@ namespace Cogito.Autofac.DependencyInjection
 
         public bool Contains(ServiceDescriptor item)
         {
-            return builder.IsRegistered(new TypedService(item.ServiceType)) || staged.Any(i => i.Item1 == item);
+            return ServiceDescriptors.Contains(item);
         }
 
         public void CopyTo(ServiceDescriptor[] array, int arrayIndex)
         {
-            var l = ServiceDescriptors.ToList();
-            for (var i = 0; i < l.Count; i++)
-                array[arrayIndex + i] = l[i];
+            ServiceDescriptors.CopyTo(array, arrayIndex);
         }
 
         public IEnumerator<ServiceDescriptor> GetEnumerator()
@@ -245,9 +284,7 @@ namespace Cogito.Autofac.DependencyInjection
 
         public int IndexOf(ServiceDescriptor item)
         {
-            return ServiceDescriptors
-                .Select((a, i) => new { ServiceDescriptor = a, Index = i })
-                .FirstOrDefault(x => Equals(x.ServiceDescriptor, item))?.Index ?? -1;
+            return ServiceDescriptors.IndexOf(item);
         }
 
         public void Insert(int index, ServiceDescriptor item)
@@ -262,27 +299,25 @@ namespace Cogito.Autofac.DependencyInjection
             if (remove.Item1 != null)
             {
                 staged.Remove(remove);
+                descriptors = null;
                 return true;
             }
 
             // existing descriptor that matches, but outside of our staged items, we cannot support removing
-            if (ServiceDescriptors.Contains(item))
+            if (Contains(item))
                 throw new NotSupportedException("Cannot remove a service added from a separate call to Populate or which was not registered by Microsoft Dependency Injection.");
 
             return false;
         }
 
+        /// <summary>
+        /// Removes the descriptor at the specified index.
+        /// </summary>
+        /// <param name="index"></param>
         public void RemoveAt(int index)
         {
-            Remove(ServiceDescriptors.ElementAt(index));
+            Remove(this[index]);
         }
-
-        /// <summary>
-        /// Gets the full set of service descriptors that exist in the underlying container builder.
-        /// </summary>
-        IEnumerable<ServiceDescriptor> ServiceDescriptors => registered
-            .SelectMany(i => GetServiceDescriptors(i))
-            .Concat(staged.Select(i => i.Item1));
 
         /// <summary>
         /// Disposes of the instance.
@@ -291,7 +326,10 @@ namespace Cogito.Autofac.DependencyInjection
         {
             // unsubscribe from builder
             if (builder != null)
+            {
                 builder.Registered -= builder_Registered;
+                builder.RegistrationSourceAdded -= builder_RegistrationSourceAdded;
+            }
         }
 
     }
