@@ -20,7 +20,7 @@ namespace Cogito.Autofac.DependencyInjection
     /// <summary>
     /// Provides a <see cref="IServiceCollection"/> implementation which maps operations against a <see cref="IComponentRegistry"/>.
     /// </summary>
-    class ComponentRegistryServiceCollection : IServiceCollection, IDisposable
+    class ComponentRegistryServiceCollection : IComponentRegistryServiceCollection, IDisposable
     {
 
         readonly IComponentRegistryBuilder builder;
