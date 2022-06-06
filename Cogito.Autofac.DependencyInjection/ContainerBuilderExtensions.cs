@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Autofac;
@@ -43,6 +44,24 @@ namespace Cogito.Autofac.DependencyInjection
         public static ContainerBuilder Populate(this ContainerBuilder builder, Action<IServiceCollection> configure)
         {
             return Populate(builder, configure, null);
+        }
+
+        /// <summary>
+        /// Populates the <see cref="ContainerBuilder"/> with services registered against the generated <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public static ContainerBuilder Populate(this ContainerBuilder builder, IEnumerable<ServiceDescriptor> services)
+        {
+            if (builder == null)
+                throw new ArgumentNullException(nameof(builder));
+            if (services == null)
+                throw new ArgumentNullException(nameof(services));
+
+            var cache = (ComponentRegistryServiceCollectionCache)builder.ComponentRegistryBuilder.Properties.GetOrAdd(COMPONENT_REGISTRY_SERVICE_CACHE_KEY, _ => { builder.Populate(Enumerable.Empty<ServiceDescriptor>()); return new ComponentRegistryServiceCollectionCache(builder.ComponentRegistryBuilder); });
+            builder.RegisterCallback(b => { var c = new ComponentRegistryServiceCollection(cache, null); c.AddRange(services); cache.Flush(); });
+            return builder;
         }
 
         /// <summary>

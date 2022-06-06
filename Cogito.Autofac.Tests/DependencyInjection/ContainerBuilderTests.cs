@@ -198,6 +198,22 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         }
 
         [TestMethod]
+        public void Should_not_add_when_tryaddenumerable_with_same_factory_type()
+        {
+            var b = new global::Autofac.ContainerBuilder();
+            b.Populate(s => s.TryAddEnumerable(ServiceDescriptor.Transient<TestOptions, TestOptionsA>(svc => new TestOptionsA())));
+            b.RegisterInstance(new TestOptions2());
+            b.Populate(s => s.TryAddEnumerable(ServiceDescriptor.Transient<TestOptions, TestOptionsA>(svc => new TestOptionsA())));
+            b.RegisterInstance(new TestOptions2());
+            b.Populate(s => s.TryAddEnumerable(ServiceDescriptor.Transient<TestOptions, TestOptionsB>(svc => new TestOptionsB())));
+            b.RegisterInstance(new TestOptions2());
+            b.Populate(s => s.TryAddEnumerable(ServiceDescriptor.Transient<TestOptions, TestOptionsB>(svc => new TestOptionsB())));
+            var c = b.Build();
+            var o = c.Resolve<IEnumerable<TestOptions>>();
+            o.Should().HaveCount(2);
+        }
+
+        [TestMethod]
         public void Should_not_insert_duplicate_options()
         {
             var b = new global::Autofac.ContainerBuilder();
@@ -215,11 +231,15 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         {
             var b = new global::Autofac.ContainerBuilder();
             b.Populate(s => s.AddOptions());
+            b.Populate(s => s.AddHealthChecks());
+            b.Populate(s => s.AddCors());
+            b.Populate(s => s.AddMvc());
             b.Populate(s => s.AddRouting());
             b.Populate(s => s.AddRouting());
+            b.Populate(s => s.AddMvc());
             var c = b.Build();
             var z = c.Resolve<IEnumerable<IConfigureOptions<RouteOptions>>>();
-            z.Should().HaveCount(1);
+            z.Should().HaveCount(2);
             var e = c.Resolve<EndpointDataSource>();
             var o = c.Resolve<IOptions<RouteOptions>>();
         }
@@ -230,6 +250,20 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         {
 
             public string Value { get; set; }
+
+        }
+
+        class TestOptionsA : TestOptions
+        {
+
+
+
+        }
+
+        class TestOptionsB : TestOptions
+        {
+
+
 
         }
 
