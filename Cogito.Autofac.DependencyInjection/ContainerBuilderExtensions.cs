@@ -71,9 +71,9 @@ namespace Cogito.Autofac.DependencyInjection
         /// Populates the <see cref="ContainerBuilder"/> with services registered against the generated <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="builder"></param>
-        /// <param name="configure"></param>
+        /// <param name="services"></param>
         /// <returns></returns>
-        public static ContainerBuilder Populate(this ContainerBuilder builder, IEnumerable<ServiceDescriptor> services)
+        public static ContainerBuilder Populate(this ContainerBuilder builder, IEnumerable<ServiceDescriptor> services, object lifetimeScopeTagForSingletons = null)
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
@@ -81,8 +81,19 @@ namespace Cogito.Autofac.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
 
             var cache = GetOrCreateCache(builder);
-            builder.RegisterCallback(b => { var c = new ComponentRegistryServiceCollection(cache, null); c.AddRange(services); cache.Flush(); });
+            builder.RegisterCallback(b => { var c = new ComponentRegistryServiceCollection(cache, lifetimeScopeTagForSingletons); c.AddRange(services); cache.Flush(); });
             return builder;
+        }
+
+        /// <summary>
+        /// Populates the <see cref="ContainerBuilder"/> with services registered against the generated <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static ContainerBuilder Populate(this ContainerBuilder builder, IEnumerable<ServiceDescriptor> services)
+        {
+            return Populate(builder, services, null);
         }
 
         /// <summary>
