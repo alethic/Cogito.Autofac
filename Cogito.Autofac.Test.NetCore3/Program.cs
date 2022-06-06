@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-using Autofac.Extensions.DependencyInjection;
+using Cogito.Autofac.DependencyInjection;
 
 using Microsoft.Extensions.Hosting;
 

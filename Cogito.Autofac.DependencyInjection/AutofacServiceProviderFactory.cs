@@ -14,8 +14,8 @@ namespace Cogito.Autofac.DependencyInjection
     public class AutofacServiceProviderFactory : IServiceProviderFactory<ContainerBuilder>
     {
 
-        readonly Action<ContainerBuilder> configurationAction;
         readonly ContainerBuildOptions containerBuildOptions = ContainerBuildOptions.None;
+        readonly Action<ContainerBuilder> configurationAction;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutofacServiceProviderFactory"/> class.
@@ -32,7 +32,10 @@ namespace Cogito.Autofac.DependencyInjection
         /// Initializes a new instance of the <see cref="AutofacServiceProviderFactory"/> class.
         /// </summary>
         /// <param name="configurationAction">Action on a <see cref="ContainerBuilder"/> that adds component registrations to the container..</param>
-        public AutofacServiceProviderFactory(Action<ContainerBuilder> configurationAction = null) => this.configurationAction = configurationAction ?? (builder => { });
+        public AutofacServiceProviderFactory(Action<ContainerBuilder> configurationAction = null)
+        {
+            this.configurationAction = configurationAction ?? (builder => { });
+        }
 
         /// <summary>
         /// Creates a container builder from an <see cref="IServiceCollection" />.
