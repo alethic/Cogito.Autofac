@@ -31,7 +31,7 @@ namespace Cogito.Autofac.Tests.DependencyInjection
             b.RegisterInstance(new object());
             b.Populate(s => s.AddSingleton(new object()));
             var c = b.Build();
-            c.ComponentRegistry.Registrations.Should().HaveCount(5);
+            c.ComponentRegistry.Registrations.Should().HaveCount(6);
         }
 
         [TestMethod]
