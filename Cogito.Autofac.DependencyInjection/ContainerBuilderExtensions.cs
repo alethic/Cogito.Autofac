@@ -25,7 +25,20 @@ namespace Cogito.Autofac.DependencyInjection
         static ComponentRegistryServiceCollectionCache CreateCache(ContainerBuilder builder)
         {
             AutofacRegistration.Populate(builder, Enumerable.Empty<ServiceDescriptor>());
-            return new ComponentRegistryServiceCollectionCache(builder.ComponentRegistryBuilder);
+            var cache = new ComponentRegistryServiceCollectionCache(builder.ComponentRegistryBuilder);
+            builder.RegisterBuildCallback(scope => DeleteCache(builder, cache));
+            return cache;
+        }
+
+        /// <summary>
+        /// Removes the cache's association with the builder.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="cache"></param>
+        static void DeleteCache(ContainerBuilder builder, ComponentRegistryServiceCollectionCache cache)
+        {
+            cache.Dispose();
+            builder.Properties.Remove(COMPONENT_REGISTRY_SERVICE_CACHE_KEY);
         }
 
         /// <summary>
@@ -35,7 +48,7 @@ namespace Cogito.Autofac.DependencyInjection
         /// <returns></returns>
         static ComponentRegistryServiceCollectionCache GetOrCreateCache(ContainerBuilder builder)
         {
-            return (ComponentRegistryServiceCollectionCache)builder.ComponentRegistryBuilder.Properties.GetOrAdd(COMPONENT_REGISTRY_SERVICE_CACHE_KEY, _ => CreateCache(builder));
+            return (ComponentRegistryServiceCollectionCache)builder.Properties.GetOrAdd(COMPONENT_REGISTRY_SERVICE_CACHE_KEY, _ => CreateCache(builder));
         }
 
         /// <summary>
