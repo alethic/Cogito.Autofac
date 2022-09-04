@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 
 using Autofac.Core;
-using Autofac.Core.Registration;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,7 +12,7 @@ namespace Cogito.Autofac.DependencyInjection
     /// <summary>
     /// Provides a <see cref="IServiceCollection"/> implementation which maps operations against a <see cref="IComponentRegistry"/>.
     /// </summary>
-    class ComponentRegistryServiceCollection : IComponentRegistryServiceCollection
+    class ComponentRegistryServiceCollection : IServiceCollection
     {
 
         readonly ComponentRegistryServiceCollectionCache cache;
@@ -28,16 +27,6 @@ namespace Cogito.Autofac.DependencyInjection
         {
             this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
             this.lifetimeScopeTagForSingletons = lifetimeScopeTagForSingletons;
-        }
-
-        /// <summary>
-        /// Initializes a new instance.
-        /// </summary>
-        /// <param name="builder"></param>
-        public ComponentRegistryServiceCollection(IComponentRegistryBuilder builder) :
-            this(new ComponentRegistryServiceCollectionCache(builder), null)
-        {
-
         }
 
         /// <summary>

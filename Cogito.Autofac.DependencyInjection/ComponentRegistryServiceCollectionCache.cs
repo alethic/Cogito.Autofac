@@ -21,7 +21,7 @@ namespace Cogito.Autofac.DependencyInjection
     /// <summary>
     /// Underlying cached set of registered service descriptors.
     /// </summary>
-    class ComponentRegistryServiceCollectionCache
+    class ComponentRegistryServiceCollectionCache : IDisposable
     {
 
         readonly IComponentRegistryBuilder builder;
@@ -30,16 +30,14 @@ namespace Cogito.Autofac.DependencyInjection
         readonly Dictionary<Guid, ServiceDescriptor[]> components = new Dictionary<Guid, ServiceDescriptor[]>();
         readonly Dictionary<IRegistrationSource, ServiceDescriptor[]> sources = new Dictionary<IRegistrationSource, ServiceDescriptor[]>();
         List<ServiceDescriptor> descriptors = new List<ServiceDescriptor>();
-
+            
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
         /// <param name="builder"></param>
-        /// <param name="cache"></param>
-        /// <param name="lifetimeScopeTagForSingletons"></param>
         public ComponentRegistryServiceCollectionCache(IComponentRegistryBuilder builder)
         {
-            this.builder = builder;
+            this.builder = builder ?? throw new ArgumentNullException(nameof(builder));
             this.builder.Registered += builder_Registered;
             this.builder.RegistrationSourceAdded += builder_RegistrationSourceAdded;
         }
@@ -51,8 +49,11 @@ namespace Cogito.Autofac.DependencyInjection
         /// <param name="args"></param>
         void builder_Registered(object sender, ComponentRegisteredEventArgs args)
         {
-            registered.Add(args.ComponentRegistration);
-            descriptors = null;
+            if (args.ComponentRegistryBuilder == builder)
+            {
+                registered.Add(args.ComponentRegistration);
+                descriptors = null;
+            }
         }
 
         /// <summary>
@@ -62,8 +63,11 @@ namespace Cogito.Autofac.DependencyInjection
         /// <param name="args"></param>
         void builder_RegistrationSourceAdded(object sender, RegistrationSourceAddedEventArgs args)
         {
-            registered.Add(args.RegistrationSource);
-            descriptors = null;
+            if (args.ComponentRegistry == builder)
+            {
+                registered.Add(args.RegistrationSource);
+                descriptors = null;
+            }
         }
 
         /// <summary>
@@ -283,6 +287,7 @@ namespace Cogito.Autofac.DependencyInjection
         /// Registers the specified <see cref="ServiceDescriptor"/> against the container.
         /// </summary>
         /// <param name="service"></param>
+        /// <param name="lifetimeScopeTagForSingletons"></param>
         public void Add(ServiceDescriptor service, object lifetimeScopeTagForSingletons)
         {
             if (service == null)
