@@ -7,6 +7,7 @@ install:
 
 before_build:
   - ps: gitversion /l console /output buildserver
+  - ps: $env:Version=$env:GitVersion_SemVer
   - ps: $env:PackageVersion=$env:GitVersion_SemVer
   - ps: $env:AssemblyVersion=$env:GitVersion_AssemblySemVer
   - ps: $env:FileVersion=$env:GitVersion_MajorMinorPatch.0
