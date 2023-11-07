@@ -24,12 +24,12 @@ artifacts:
     name: Cogito.Autofac
 
 deploy:
-  provider: NuGet
-  server: https://nuget.pkg.github.com/alethic/index.json
-  username: wasabii
-  api_key:
-    secure: AEgTor17HOIs8YXyEDMsX2VmY+wyNmHhyu/fbc2zYEdIfl1ljq/2/+rsa9czOx9Z
-  skip_symbols: false
-  symbol_server:
-  artifact: /.*\.nupkg/
+  - provider: NuGet
+    server: https://nuget.pkg.github.com/alethic/index.json
+    username: wasabii
+    api_key:
+      secure: AEgTor17HOIs8YXyEDMsX2VmY+wyNmHhyu/fbc2zYEdIfl1ljq/2/+rsa9czOx9Z
+    skip_symbols: false
+    symbol_server:
+    artifact: /.*\.nupkg/
 
