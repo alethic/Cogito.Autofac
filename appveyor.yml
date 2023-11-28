@@ -29,7 +29,7 @@ deploy:
     server: https://nuget.pkg.github.com/alethic/index.json
     username: wasabii
     api_key:
-      secure: AEgTor17HOIs8YXyEDMsX2VmY+wyNmHhyu/fbc2zYEdIfl1ljq/2/+rsa9czOx9Z
+      secure: ynz3NTx4QcecEKyrBhIUtvG2lxSORrFEhwe4if7ORBN6YW5UI0Jb95/k/3r1uGpd
     skip_symbols: false
     symbol_server:
     artifact: /.*\.nupkg/

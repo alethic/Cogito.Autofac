@@ -55,11 +55,54 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         }
 
         [TestMethod]
+        public void Should_retrieve_in_order()
+        {
+            var b = new global::Autofac.ContainerBuilder();
+            b.Populate(s => s.AddScoped(p => new TestOptions() { Value = "a" }));
+            b.Populate(s => s.AddScoped(p => new TestOptions() { Value = "b" }));
+            b.RegisterInstance(new TestOptions());
+            var c = b.Build();
+
+            var l = c.Resolve<IEnumerable<TestOptions>>().ToList();
+            l[0].Value.Should().Be("a");
+            l[1].Value.Should().Be("b");
+        }
+
+        [TestMethod]
+        public void Should_retrieve_last()
+        {
+            var b = new global::Autofac.ContainerBuilder();
+            b.Populate(s => s.AddSingleton(new TestOptions() { Value = "a" }));
+            b.Populate(s => s.AddSingleton(new TestOptions() { Value = "b" }));
+            var c = b.Build();
+
+            var l = c.Resolve<TestOptions>();
+            l.Value.Should().Be("b");
+        }
+
+        [TestMethod]
+        public void Should_retrieve_last_af()
+        {
+            var b = new global::Autofac.ContainerBuilder();
+            b.RegisterInstance(new TestOptions() { Value = "a" });
+            b.RegisterInstance(new TestOptions() { Value = "b" });
+            var c = b.Build();
+
+            var l = c.Resolve<TestOptions>();
+            l.Value.Should().Be("b");
+        }
+
+        [TestMethod]
         public void Should_allow_open_generics_and_multiple_instance_registrations()
         {
             var b = new global::Autofac.ContainerBuilder();
             b.Populate(s => s.Configure<TestOptions>(a => a.Value = "Hello").Configure<TestOptions>(a => a.Value = "Goodbye"));
             var c = b.Build();
+
+            var p = c.Resolve<IEnumerable<IConfigureOptions<TestOptions>>>().ToList();
+            var o1 = new TestOptions();
+            p[0].Configure(o1);
+            o1.Value.Should().Be("Goodbye");
 
             var o = c.Resolve<IOptions<TestOptions>>();
             var z = c.Resolve<IOptionsSnapshot<TestOptions>>();
@@ -176,6 +219,30 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         }
 
         [TestMethod]
+        public void Should_add_when_add_after_tryadd()
+        {
+            var b = new global::Autofac.ContainerBuilder();
+            b.Populate(s => { s.AddSingleton<TestOptions, TestOptionsA>(); s.AddSingleton<TestOptions, TestOptionsB>(); });
+            var c = b.Build();
+            var l = c.Resolve<IEnumerable<TestOptions>>().ToList();
+            l[0].Should().BeOfType<TestOptionsA>();
+            l[1].Should().BeOfType<TestOptionsB>();
+            var o = c.Resolve<TestOptions>();
+            o.GetType().Should().Be(typeof(TestOptionsB));
+        }
+
+        [TestMethod]
+        public void Should_add_when_add_after_tryadd_across_calls()
+        {
+            var b = new global::Autofac.ContainerBuilder();
+            b.Populate(s => s.TryAddSingleton<TestOptions, TestOptionsA>());
+            b.Populate(s => s.AddSingleton<TestOptions, TestOptionsB>());
+            var c = b.Build();
+            var o = c.Resolve<TestOptions>();
+            o.GetType().Should().Be(typeof(TestOptionsB));
+        }
+
+        [TestMethod]
         public void Should_not_add_when_tryaddenumerable_with_same_instance()
         {
             var b = new global::Autofac.ContainerBuilder();
@@ -249,7 +316,7 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         class TestOptions
         {
 
-            public string Value { get; set; }
+            public string Value { get; set; } 
 
         }
 

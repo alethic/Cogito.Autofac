@@ -81,7 +81,7 @@ namespace Cogito.Autofac.DependencyInjection
         public void Flush()
         {
             // register each of the staged items
-            foreach (var (registration, tag) in staged.AsEnumerable().Reverse())
+            foreach (var (registration, tag) in staged)
                 Register(registration, tag);
 
             // clear the staging area
