@@ -97,7 +97,7 @@ namespace Cogito.Autofac.DependencyInjection
         void Register(ServiceDescriptor registration, object lifetimeScopeTagForSingletons)
         {
             if (registration.ServiceType.GetTypeInfo().IsGenericTypeDefinition == false)
-                builder.Register(registration.ToComponentRegistration(lifetimeScopeTagForSingletons));
+                builder.Register(registration.ToComponentRegistration(lifetimeScopeTagForSingletons), false);
             else
                 builder.AddRegistrationSource(registration.ToRegistrationSource(builder, lifetimeScopeTagForSingletons));
         }

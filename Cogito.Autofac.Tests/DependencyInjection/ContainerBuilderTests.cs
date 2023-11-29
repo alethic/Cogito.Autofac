@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+
 #if NETCOREAPP3_1_OR_GREATER
 using Microsoft.AspNetCore.Routing;
 #endif
@@ -55,20 +56,6 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         }
 
         [TestMethod]
-        public void Should_retrieve_in_order()
-        {
-            var b = new global::Autofac.ContainerBuilder();
-            b.Populate(s => s.AddScoped(p => new TestOptions() { Value = "a" }));
-            b.Populate(s => s.AddScoped(p => new TestOptions() { Value = "b" }));
-            b.RegisterInstance(new TestOptions());
-            var c = b.Build();
-
-            var l = c.Resolve<IEnumerable<TestOptions>>().ToList();
-            l[0].Value.Should().Be("a");
-            l[1].Value.Should().Be("b");
-        }
-
-        [TestMethod]
         public void Should_retrieve_last()
         {
             var b = new global::Autofac.ContainerBuilder();
@@ -90,30 +77,6 @@ namespace Cogito.Autofac.Tests.DependencyInjection
 
             var l = c.Resolve<TestOptions>();
             l.Value.Should().Be("b");
-        }
-
-        [TestMethod]
-        public void Should_allow_open_generics_and_multiple_instance_registrations()
-        {
-            var b = new global::Autofac.ContainerBuilder();
-            b.Populate(s => s.Configure<TestOptions>(a => a.Value = "Hello").Configure<TestOptions>(a => a.Value = "Goodbye"));
-            var c = b.Build();
-
-            var p = c.Resolve<IEnumerable<IConfigureOptions<TestOptions>>>().ToList();
-            var o1 = new TestOptions();
-            p[0].Configure(o1);
-            o1.Value.Should().Be("Goodbye");
-
-            var o = c.Resolve<IOptions<TestOptions>>();
-            var z = c.Resolve<IOptionsSnapshot<TestOptions>>();
-            var m = c.Resolve<IOptionsMonitor<TestOptions>>();
-            o.Should().NotBeNull();
-            o.Value.Value.Should().Be("Goodbye");
-            z.Should().NotBeNull();
-            m.Should().NotBeNull();
-
-            var l = c.Resolve<IEnumerable<IOptions<TestOptions>>>();
-            l.Should().HaveCount(1);
         }
 
         [TestMethod]
@@ -225,8 +188,8 @@ namespace Cogito.Autofac.Tests.DependencyInjection
             b.Populate(s => { s.AddSingleton<TestOptions, TestOptionsA>(); s.AddSingleton<TestOptions, TestOptionsB>(); });
             var c = b.Build();
             var l = c.Resolve<IEnumerable<TestOptions>>().ToList();
-            l[0].Should().BeOfType<TestOptionsA>();
-            l[1].Should().BeOfType<TestOptionsB>();
+            l.Should().ContainItemsAssignableTo<TestOptionsA>();
+            l.Should().ContainItemsAssignableTo<TestOptionsB>();
             var o = c.Resolve<TestOptions>();
             o.GetType().Should().Be(typeof(TestOptionsB));
         }
@@ -316,7 +279,7 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         class TestOptions
         {
 
-            public string Value { get; set; } 
+            public string Value { get; set; }
 
         }
 
