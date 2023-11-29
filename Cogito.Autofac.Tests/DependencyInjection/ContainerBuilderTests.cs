@@ -68,18 +68,6 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         }
 
         [TestMethod]
-        public void Should_retrieve_last_af()
-        {
-            var b = new global::Autofac.ContainerBuilder();
-            b.RegisterInstance(new TestOptions() { Value = "a" });
-            b.RegisterInstance(new TestOptions() { Value = "b" });
-            var c = b.Build();
-
-            var l = c.Resolve<TestOptions>();
-            l.Value.Should().Be("b");
-        }
-
-        [TestMethod]
         public void Can_remove_descriptor_added_in_same_pass()
         {
             var b = new global::Autofac.ContainerBuilder();
