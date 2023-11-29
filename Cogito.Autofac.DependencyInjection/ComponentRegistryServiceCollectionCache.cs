@@ -30,7 +30,8 @@ namespace Cogito.Autofac.DependencyInjection
         readonly Dictionary<Guid, ServiceDescriptor[]> components = new Dictionary<Guid, ServiceDescriptor[]>();
         readonly Dictionary<IRegistrationSource, ServiceDescriptor[]> sources = new Dictionary<IRegistrationSource, ServiceDescriptor[]>();
         List<ServiceDescriptor> descriptors = new List<ServiceDescriptor>();
-            
+        long nextRegistrationOrder = 1;
+
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
@@ -82,7 +83,7 @@ namespace Cogito.Autofac.DependencyInjection
         {
             // register each of the staged items
             foreach (var (registration, tag) in staged)
-                Register(registration, tag);
+                Register(registration, nextRegistrationOrder++, tag);
 
             // clear the staging area
             staged.Clear();
@@ -94,10 +95,10 @@ namespace Cogito.Autofac.DependencyInjection
         /// </summary>
         /// <param name="registration"></param>
         /// <param name="lifetimeScopeTagForSingletons"></param>
-        void Register(ServiceDescriptor registration, object lifetimeScopeTagForSingletons)
+        void Register(ServiceDescriptor registration, long registrationOrder, object lifetimeScopeTagForSingletons)
         {
             if (registration.ServiceType.GetTypeInfo().IsGenericTypeDefinition == false)
-                builder.Register(registration.ToComponentRegistration(lifetimeScopeTagForSingletons), false);
+                builder.Register(registration.ToComponentRegistration(registrationOrder, lifetimeScopeTagForSingletons), false);
             else
                 builder.AddRegistrationSource(registration.ToRegistrationSource(builder, lifetimeScopeTagForSingletons));
         }

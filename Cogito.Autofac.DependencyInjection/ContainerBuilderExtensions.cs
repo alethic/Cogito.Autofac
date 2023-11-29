@@ -65,7 +65,7 @@ namespace Cogito.Autofac.DependencyInjection
                 throw new ArgumentNullException(nameof(configure));
 
             var cache = GetOrCreateCache(builder);
-            builder.RegisterCallback(b => { configure(new ComponentRegistryServiceCollection(cache, lifetimeScopeTagForSingletons)); cache.Flush(); });
+            builder.RegisterCallback(b => { var c = new ComponentRegistryServiceCollection(cache, lifetimeScopeTagForSingletons); configure(c); c.Flush(); });
             return builder;
         }
 
@@ -94,7 +94,7 @@ namespace Cogito.Autofac.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
 
             var cache = GetOrCreateCache(builder);
-            builder.RegisterCallback(b => { var c = new ComponentRegistryServiceCollection(cache, lifetimeScopeTagForSingletons); c.AddRange(services); cache.Flush(); });
+            builder.RegisterCallback(b => { var c = new ComponentRegistryServiceCollection(cache, lifetimeScopeTagForSingletons); c.AddRange(services); c.Flush(); });
             return builder;
         }
 

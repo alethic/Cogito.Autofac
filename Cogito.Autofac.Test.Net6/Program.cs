@@ -2,6 +2,7 @@
 
 using Cogito.Autofac.DependencyInjection;
 
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
 namespace Cogito.Autofac.Test.Net6
@@ -18,6 +19,7 @@ namespace Cogito.Autofac.Test.Net6
         public static async Task Main(string[] args) =>
             await Host.CreateDefaultBuilder(args)
                 .UseServiceProviderFactory(new AutofacServiceProviderFactory(b => b.RegisterAllAssemblyModules()))
+                .ConfigureWebHostDefaults(b => b.UseStartup<Startup>())
                 .RunConsoleAsync();
 
     }

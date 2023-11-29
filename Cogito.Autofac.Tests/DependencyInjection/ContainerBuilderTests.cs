@@ -242,6 +242,21 @@ namespace Cogito.Autofac.Tests.DependencyInjection
             z.Should().HaveCount(1);
         }
 
+        [TestMethod]
+        public void Should_enumerate_in_insertion_order()
+        {
+            var b = new global::Autofac.ContainerBuilder();
+            for (int i = 0; i < 512; i++)
+            {
+                var j = i;
+                b.Populate(s => s.AddSingleton(new TestOptions() { Value = j.ToString() }));
+            }
+            var c = b.Build();
+            var z = c.Resolve<IEnumerable<TestOptions>>().ToList();
+            for (int i = 0; i < 512; i++)
+                z[i].Value.Should().Be(i.ToString());
+        }
+
 #if NETCOREAPP3_1_OR_GREATER
 
         [TestMethod]

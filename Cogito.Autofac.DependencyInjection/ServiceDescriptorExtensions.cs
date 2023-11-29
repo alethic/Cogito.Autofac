@@ -26,7 +26,6 @@ namespace Cogito.Autofac.DependencyInjection
         static readonly Type OpenGenericRegistrationSourceType = typeof(global::Autofac.Module).Assembly.GetType("Autofac.Features.OpenGenerics.OpenGenericRegistrationSource");
 
         static readonly IEnumerable<Parameter> EmptyParameters = Enumerable.Empty<Parameter>();
-        static readonly IDictionary<string, object> EmptyMetadata = new Dictionary<string, object>();
 
         /// <summary>
         /// Generates a <see cref="IComponentRegistration"/> that mimics the <see cref="ServiceDescriptor"/>.
@@ -34,7 +33,7 @@ namespace Cogito.Autofac.DependencyInjection
         /// <param name="service"></param>
         /// <param name="lifetimeScopeTagForSingletons"></param>
         /// <returns></returns>
-        public static IComponentRegistration ToComponentRegistration(this ServiceDescriptor service, object lifetimeScopeTagForSingletons = null)
+        public static IComponentRegistration ToComponentRegistration(this ServiceDescriptor service, long? registrationOrder = null, object lifetimeScopeTagForSingletons = null)
         {
             if (service == null)
                 throw new ArgumentNullException(nameof(service));
@@ -49,7 +48,10 @@ namespace Cogito.Autofac.DependencyInjection
                 GetInstanceSharing(service),
                 InstanceOwnership.OwnedByLifetimeScope,
                 new[] { new TypedService(service.ServiceType) },
-                EmptyMetadata,
+                new Dictionary<string, object>()
+                {
+                    ["__RegistrationOrder"] = registrationOrder
+                },
                 service);
         }
 
@@ -58,9 +60,9 @@ namespace Cogito.Autofac.DependencyInjection
         /// </summary>
         /// <param name="service"></param>
         /// <returns></returns>
-        public static IComponentRegistration ToComponentRegistration(this ServiceDescriptor service)
+        public static IComponentRegistration ToComponentRegistration(this ServiceDescriptor service, int? registrationOrder = null)
         {
-            return ToComponentRegistration(service, null);
+            return ToComponentRegistration(service, registrationOrder, null);
         }
 
         /// <summary>
