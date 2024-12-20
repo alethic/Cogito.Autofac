@@ -1,20 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Cogito.Extensions.Logging.Autofac" Version="2.0.20" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Cogito.Extensions.Logging.Autofac" Version="2.0.20" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Cogito.Autofac.DependencyInjection\Cogito.Autofac.DependencyInjection.csproj" />
-    <ProjectReference Include="..\Cogito.Autofac\Cogito.Autofac.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Cogito.Autofac.DependencyInjection\Cogito.Autofac.DependencyInjection.csproj" />
+        <ProjectReference Include="..\Cogito.Autofac\Cogito.Autofac.csproj" />
+    </ItemGroup>
 
 </Project>
