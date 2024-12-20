@@ -48,6 +48,7 @@ jobs:
     - name: NuGet Restore
       run: dotnet restore Cogito.Autofac.sln
     - name: Build
+      shell: pwsh
       run: |
         dotnet msbuild /m /bl `
           /p:Configuration="Release" `
