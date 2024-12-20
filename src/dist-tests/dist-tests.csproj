@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <TestTarget Include="Cogito.Autofac.Tests|net48" ProjectName="Cogito.Autofac.Tests" TargetFramework="net48" />
+        <TestTarget Include="Cogito.Autofac.Tests|net481" ProjectName="Cogito.Autofac.Tests" TargetFramework="net481" />
         <TestTarget Include="Cogito.Autofac.Tests|net6.0" ProjectName="Cogito.Autofac.Tests" TargetFramework="net6.0" />
         <TestTarget Include="Cogito.Autofac.Tests|net8.0" ProjectName="Cogito.Autofac.Tests" TargetFramework="net8.0" />
     </ItemGroup>

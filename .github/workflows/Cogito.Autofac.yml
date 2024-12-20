@@ -93,7 +93,7 @@ jobs:
         - osx-x64
         - osx-arm64
         tfm:
-        - net48
+        - net481
         - net6.0
         - net8.0
         exclude:
