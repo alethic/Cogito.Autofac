@@ -81,7 +81,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: tests
-        path: tests.tar.gz
+        path: dist/tests.tar.gz
   test:
     strategy:
       matrix:
