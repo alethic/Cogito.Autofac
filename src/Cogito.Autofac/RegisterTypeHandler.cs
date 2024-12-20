@@ -93,8 +93,8 @@ namespace Cogito.Autofac
 
             // root is itself a builder add it to builder list
             if (attribute is IRegistrationBuilderAttribute a)
-#if NET461
-                builders = AppendInternal(builders, a);
+#if NETFRAMEWORK
+                builders = Cogito.Linq.EnumerableExtensions.Append(builders, a);
 #else
                 builders = builders.Append(a);
 #endif
@@ -102,16 +102,6 @@ namespace Cogito.Autofac
             // core registration method with final set of builders
             RegisterCore(builder, type, attribute, builders);
         }
-
-#if NET461
-        static IEnumerable<T> AppendInternal<T>(IEnumerable<T> source, T value)
-        {
-            foreach (var i in source)
-                yield return i;
-
-            yield return value;
-        }
-#endif
 
         /// <summary>
         /// Carries out the registration against the container and applies the builders.

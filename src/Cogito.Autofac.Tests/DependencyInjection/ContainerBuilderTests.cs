@@ -272,7 +272,11 @@ namespace Cogito.Autofac.Tests.DependencyInjection
             b.Populate(s => s.AddMvc());
             var c = b.Build();
             var z = c.Resolve<IEnumerable<IConfigureOptions<RouteOptions>>>();
+#if NET6_0
             z.Should().HaveCount(2);
+#else
+            z.Should().HaveCount(3);
+#endif
             var e = c.Resolve<EndpointDataSource>();
             var o = c.Resolve<IOptions<RouteOptions>>();
         }

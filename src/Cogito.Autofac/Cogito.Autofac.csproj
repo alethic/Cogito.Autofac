@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net6.0;net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0;net472</TargetFrameworks>
     <Description>Provides various autofac utilities, and a new unique attribute registration system.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>

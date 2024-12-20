@@ -3,20 +3,33 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cogito.Autofac", "Cogito.Autofac\Cogito.Autofac.csproj", "{E35075AC-8542-4351-B7B6-1E635C954F82}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cogito.Autofac", "src\Cogito.Autofac\Cogito.Autofac.csproj", "{E35075AC-8542-4351-B7B6-1E635C954F82}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7271F8CF-C4EC-47FE-91F3-FF3331482C4F}"
 	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
 		appveyor.yml = appveyor.yml
+		Cogito.Autofac.dist.msbuildproj = Cogito.Autofac.dist.msbuildproj
+		.github\workflows\Cogito.Autofac.yml = .github\workflows\Cogito.Autofac.yml
 		Directory.Build.props = Directory.Build.props
 		GitVersion.yml = GitVersion.yml
+		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cogito.Autofac.DependencyInjection", "Cogito.Autofac.DependencyInjection\Cogito.Autofac.DependencyInjection.csproj", "{098C046D-8A6A-4BE7-A93D-D0FC0D15BE77}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cogito.Autofac.DependencyInjection", "src\Cogito.Autofac.DependencyInjection\Cogito.Autofac.DependencyInjection.csproj", "{098C046D-8A6A-4BE7-A93D-D0FC0D15BE77}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cogito.Autofac.Tests", "Cogito.Autofac.Tests\Cogito.Autofac.Tests.csproj", "{0A381072-ABCC-4FFE-A9BF-2894A5D36CAB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cogito.Autofac.Tests", "src\Cogito.Autofac.Tests\Cogito.Autofac.Tests.csproj", "{0A381072-ABCC-4FFE-A9BF-2894A5D36CAB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cogito.Autofac.Test.Net6", "Cogito.Autofac.Test.Net6\Cogito.Autofac.Test.Net6.csproj", "{5942B73A-E52B-4133-9FA3-BE0C6EADC52F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cogito.Autofac.Test.Net6", "src\Cogito.Autofac.Test.Net6\Cogito.Autofac.Test.Net6.csproj", "{5942B73A-E52B-4133-9FA3-BE0C6EADC52F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C76D0751-F9D4-41F6-B5A2-63861C17C36A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dist", "dist", "{B040EEA1-9A2A-4584-8E8F-D0CCB2FDE739}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dist-nuget", "src\dist-nuget\dist-nuget.csproj", "{EDECF124-C399-4755-A674-ED13436DD586}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dist-tests", "src\dist-tests\dist-tests.csproj", "{6015F426-EA42-4787-A5F7-F559DAB3AC66}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,9 +53,25 @@ Global
 		{5942B73A-E52B-4133-9FA3-BE0C6EADC52F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5942B73A-E52B-4133-9FA3-BE0C6EADC52F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5942B73A-E52B-4133-9FA3-BE0C6EADC52F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDECF124-C399-4755-A674-ED13436DD586}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDECF124-C399-4755-A674-ED13436DD586}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDECF124-C399-4755-A674-ED13436DD586}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDECF124-C399-4755-A674-ED13436DD586}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6015F426-EA42-4787-A5F7-F559DAB3AC66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6015F426-EA42-4787-A5F7-F559DAB3AC66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6015F426-EA42-4787-A5F7-F559DAB3AC66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6015F426-EA42-4787-A5F7-F559DAB3AC66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E35075AC-8542-4351-B7B6-1E635C954F82} = {C76D0751-F9D4-41F6-B5A2-63861C17C36A}
+		{098C046D-8A6A-4BE7-A93D-D0FC0D15BE77} = {C76D0751-F9D4-41F6-B5A2-63861C17C36A}
+		{0A381072-ABCC-4FFE-A9BF-2894A5D36CAB} = {C76D0751-F9D4-41F6-B5A2-63861C17C36A}
+		{5942B73A-E52B-4133-9FA3-BE0C6EADC52F} = {C76D0751-F9D4-41F6-B5A2-63861C17C36A}
+		{EDECF124-C399-4755-A674-ED13436DD586} = {B040EEA1-9A2A-4584-8E8F-D0CCB2FDE739}
+		{6015F426-EA42-4787-A5F7-F559DAB3AC66} = {B040EEA1-9A2A-4584-8E8F-D0CCB2FDE739}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FF4B3820-4206-4316-82A5-DEA5792C6A71}
