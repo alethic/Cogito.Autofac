@@ -100,7 +100,6 @@ jobs:
           sys: osx-x64
         - tfm: net48
           sys: osx-arm64
-        include:
     name: Test (${{ matrix.run }}:${{ matrix.tfm }}:${{ matrix.sys }})
     timeout-minutes: 240
     needs:
