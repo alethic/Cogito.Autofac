@@ -59,7 +59,7 @@ jobs:
           /p:PackageProjectUrl="${env:GITHUB_SERVER_URL}/${env:GITHUB_REPOSITORY}" `
           /p:BuildInParallel=true `
           /p:ContinuousIntegrationBuild=true `
-          IKVM.Maven.dist.msbuildproj
+          Cogito.Autofac.dist.msbuildproj
     - name: Upload MSBuild Log
       if: ${{ always() }}
       uses: actions/upload-artifact@v4
@@ -146,8 +146,7 @@ jobs:
                 "-v:diag",
                 "--results-directory", "TestResults",
                 "--logger:console;verbosity=diag",
-                "--logger:trx",
-                "--collect", "Code Coverage"
+                "--logger:trx"
             )
             
             $runsettings = $(gi .\tests\$tst\$tfm\*.runsettings)
