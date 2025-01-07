@@ -22,7 +22,7 @@ namespace Cogito.Autofac.DependencyInjection
     {
 
         static readonly Type OpenGenericRegistrationExtensionsType = typeof(global::Autofac.Module).Assembly.GetType("Autofac.Features.OpenGenerics.OpenGenericRegistrationExtensions");
-        static readonly MethodInfo CreateRegistrationBuilderMethod = OpenGenericRegistrationExtensionsType.GetMethod("CreateGenericBuilder", new Type[] { typeof(Type) });
+        static readonly MethodInfo CreateRegistrationBuilderMethod = OpenGenericRegistrationExtensionsType.GetMethod("CreateGenericBuilder", [typeof(Type)]);
         static readonly Type OpenGenericRegistrationSourceType = typeof(global::Autofac.Module).Assembly.GetType("Autofac.Features.OpenGenerics.OpenGenericRegistrationSource");
 
         static readonly IEnumerable<Parameter> EmptyParameters = Enumerable.Empty<Parameter>();
@@ -41,18 +41,36 @@ namespace Cogito.Autofac.DependencyInjection
             if (service.ServiceType.GetTypeInfo().IsGenericTypeDefinition)
                 throw new NotSupportedException("Cannot convert generic type definition to component registration.");
 
-            return new ServiceDescriptorComponentRegistration(
-                Guid.NewGuid(),
-                GetActivator(service),
-                GetComponentLifetime(service, lifetimeScopeTagForSingletons),
-                GetInstanceSharing(service),
-                InstanceOwnership.OwnedByLifetimeScope,
-                new[] { new TypedService(service.ServiceType) },
-                new Dictionary<string, object>()
-                {
-                    ["__RegistrationOrder"] = registrationOrder
-                },
-                service);
+            if (service.IsKeyedService)
+            {
+                return new ServiceDescriptorComponentRegistration(
+                    Guid.NewGuid(),
+                    GetKeyedActivator(service),
+                    GetComponentLifetime(service, lifetimeScopeTagForSingletons),
+                    GetInstanceSharing(service),
+                    InstanceOwnership.OwnedByLifetimeScope,
+                    [new global::Autofac.Core.KeyedService(service.ServiceKey, service.ServiceType)],
+                    new Dictionary<string, object>()
+                    {
+                        ["__RegistrationOrder"] = registrationOrder
+                    },
+                    service);
+            }
+            else
+            {
+                return new ServiceDescriptorComponentRegistration(
+                    Guid.NewGuid(),
+                    GetActivator(service),
+                    GetComponentLifetime(service, lifetimeScopeTagForSingletons),
+                    GetInstanceSharing(service),
+                    InstanceOwnership.OwnedByLifetimeScope,
+                    [new TypedService(service.ServiceType)],
+                    new Dictionary<string, object>()
+                    {
+                        ["__RegistrationOrder"] = registrationOrder
+                    },
+                    service);
+            }
         }
 
         /// <summary>
@@ -82,7 +100,7 @@ namespace Cogito.Autofac.DependencyInjection
                 if (service.ImplementationType == null)
                     throw new NotSupportedException("No implementation type.");
 
-                var b = (IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle>)CreateRegistrationBuilderMethod.Invoke(null, new object[] { service.ImplementationType });
+                var b = (IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle>)CreateRegistrationBuilderMethod.Invoke(null, [service.ImplementationType]);
                 var s = (IRegistrationSource)Activator.CreateInstance(
                     OpenGenericRegistrationSourceType,
                     new RegistrationData(new TypedService(service.ServiceType))
@@ -95,7 +113,7 @@ namespace Cogito.Autofac.DependencyInjection
                     new ReflectionActivatorData(service.ImplementationType));
 
                 // wrap in custom registration source to keep track of descriptor
-                return new ServiceDescriptorRegistrationSource(s, new[] { service });
+                return new ServiceDescriptorRegistrationSource(s, [service]);
             }
 
             throw new NotSupportedException("Cannot convert non-generic ServiceDescriptor to RegistrationSource.");
@@ -140,12 +158,58 @@ namespace Cogito.Autofac.DependencyInjection
                 var implementationType = typeArguments[1];
                 var componentContextParameter = Expression.Parameter(typeof(IComponentContext), "context");
                 var parameterParameter = Expression.Parameter(typeof(IEnumerable<Parameter>), "parameters");
-                var resolveMethodInfo = typeof(ResolutionExtensions).GetMethods().First(i => i.Name == "Resolve" && i.IsGenericMethodDefinition && i.GetGenericArguments().Length == 1);
+                var resolveMethodInfo = typeof(ResolutionExtensions).GetMethods().First(i => i.Name == nameof(ResolutionExtensions.Resolve) && i.IsGenericMethodDefinition && i.GetGenericArguments().Length == 1);
                 var func = Expression.Lambda(
                     typeof(Func<,,>).MakeGenericType(typeof(IComponentContext), typeof(IEnumerable<Parameter>), implementationType),
                     Expression.Invoke(
                         Expression.Constant(service.ImplementationFactory),
                         Expression.Call(resolveMethodInfo.MakeGenericMethod(typeof(IServiceProvider)), componentContextParameter)),
+                    componentContextParameter,
+                    parameterParameter);
+
+                // generate activator
+                return new DelegateActivator(service.ServiceType, (Func<IComponentContext, IEnumerable<Parameter>, object>)func.Compile());
+            }
+
+            throw new InvalidOperationException();
+        }
+
+        /// <summary>
+        /// Gets the activator for the given keyed <see cref="ServiceDescriptor"/>.
+        /// </summary>
+        /// <param name="service"></param>
+        /// <returns></returns>
+        static IInstanceActivator GetKeyedActivator(ServiceDescriptor service)
+        {
+            if (service.KeyedImplementationInstance != null)
+                return new ProvidedInstanceActivator(
+                    service.KeyedImplementationInstance);
+
+            if (service.KeyedImplementationType != null)
+                return new ReflectionActivator(
+                    service.KeyedImplementationType,
+                    new DefaultConstructorFinder(),
+                    new MostParametersConstructorSelector(),
+                    EmptyParameters,
+                    EmptyParameters);
+
+            if (service.KeyedImplementationFactory != null)
+            {
+                // generate a factory method that has the correct return type
+                // TryAddEnumerable actually probs the return type of the function at runtime to determine equality
+                // so our method needs to be translatable back to that format
+                var typeArguments = service.KeyedImplementationFactory.GetType().GenericTypeArguments;
+                var implementationType = typeArguments[2];
+                var componentContextParameter = Expression.Parameter(typeof(IComponentContext), "context");
+                var serviceKeyConstant = Expression.Constant(service.ServiceKey, typeof(object));
+                var parameterParameter = Expression.Parameter(typeof(IEnumerable<Parameter>), "parameters");
+                var resolveMethodInfo = typeof(ResolutionExtensions).GetMethods().First(i => i.Name == nameof(ResolutionExtensions.Resolve) && i.IsGenericMethodDefinition && i.GetGenericArguments().Length == 1);
+                var func = Expression.Lambda(
+                    typeof(Func<,,>).MakeGenericType(typeof(IComponentContext), typeof(IEnumerable<Parameter>), implementationType),
+                    Expression.Invoke(
+                        Expression.Constant(service.KeyedImplementationFactory),
+                        Expression.Call(resolveMethodInfo.MakeGenericMethod(typeof(IServiceProvider)), componentContextParameter),
+                        serviceKeyConstant),
                     componentContextParameter,
                     parameterParameter);
 
@@ -168,12 +232,12 @@ namespace Cogito.Autofac.DependencyInjection
             {
                 case ServiceLifetime.Singleton:
                     if (lifetimeScopeTagForSingletons == null)
-                        return new RootScopeLifetime();
+                        return RootScopeLifetime.Instance;
                     else
                         return new MatchingScopeLifetime(lifetimeScopeTagForSingletons);
                 case ServiceLifetime.Transient:
                 case ServiceLifetime.Scoped:
-                    return new CurrentScopeLifetime();
+                    return CurrentScopeLifetime.Instance;
                 default:
                     throw new InvalidOperationException();
             }

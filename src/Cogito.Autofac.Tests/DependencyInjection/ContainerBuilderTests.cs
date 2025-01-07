@@ -107,6 +107,38 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         }
 
         [TestMethod]
+        public void Can_register_keyed_scoped()
+        {
+            var b = new global::Autofac.ContainerBuilder();
+            b.Populate(s => s.AddKeyedScoped(typeof(TestOptions), "KEY"));
+            var c = b.Build();
+            c.ResolveOptional<TestOptions>().Should().BeNull();
+            var a = c.ResolveKeyed<TestOptions>("KEY");
+
+            var scope = c.BeginLifetimeScope();
+            scope.ResolveOptional<TestOptions>().Should().BeNull();
+            var z = scope.ResolveKeyed<TestOptions>("KEY");
+
+            a.Should().NotBeSameAs(z);
+        }
+
+        [TestMethod]
+        public void Can_register_keyed_scoped_factory()
+        {
+            var b = new global::Autofac.ContainerBuilder();
+            b.Populate(s => s.AddKeyedScoped(typeof(TestOptions), "KEY", (p, k) => new TestOptions()));
+            var c = b.Build();
+            c.ResolveOptional<TestOptions>().Should().BeNull();
+            var a = c.ResolveKeyed<TestOptions>("KEY");
+
+            var scope = c.BeginLifetimeScope();
+            scope.ResolveOptional<TestOptions>().Should().BeNull();
+            var z = scope.ResolveKeyed<TestOptions>("KEY");
+
+            a.Should().NotBeSameAs(z);
+        }
+
+        [TestMethod]
         public void Can_register_singleton_and_get_in_scope()
         {
             var b = new global::Autofac.ContainerBuilder();
@@ -116,6 +148,22 @@ namespace Cogito.Autofac.Tests.DependencyInjection
 
             var scope = c.BeginLifetimeScope();
             var z = scope.Resolve<TestOptions>();
+
+            a.Should().BeSameAs(z);
+        }
+
+        [TestMethod]
+        public void Can_register_keyed_singleton_and_get_in_scope()
+        {
+            var b = new global::Autofac.ContainerBuilder();
+            b.Populate(s => s.AddKeyedSingleton(typeof(TestOptions), (object)"KEY"));
+            var c = b.Build();
+            c.ResolveOptional<TestOptions>().Should().BeNull();
+            var a = c.ResolveKeyed<TestOptions>("KEY");
+
+            var scope = c.BeginLifetimeScope();
+            scope.ResolveOptional<TestOptions>().Should().BeNull();
+            var z = scope.ResolveKeyed<TestOptions>("KEY");
 
             a.Should().BeSameAs(z);
         }
