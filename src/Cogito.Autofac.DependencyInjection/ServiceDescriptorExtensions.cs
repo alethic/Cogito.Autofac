@@ -21,6 +21,8 @@ namespace Cogito.Autofac.DependencyInjection
     public static class ServiceDescriptorExtensions
     {
 
+        static readonly MethodInfo ResolveMethodInfo = typeof(ResolutionExtensions).GetMethods().First(i => i.Name == nameof(ResolutionExtensions.Resolve) && i.IsGenericMethodDefinition && i.GetGenericArguments().Length == 1);
+        static readonly MethodInfo ResolveServiceProviderMethodInfo = ResolveMethodInfo.MakeGenericMethod(typeof(IServiceProvider));
         static readonly Type OpenGenericRegistrationExtensionsType = typeof(global::Autofac.Module).Assembly.GetType("Autofac.Features.OpenGenerics.OpenGenericRegistrationExtensions");
         static readonly MethodInfo CreateRegistrationBuilderMethod = OpenGenericRegistrationExtensionsType.GetMethod("CreateGenericBuilder", [typeof(Type)]);
         static readonly Type OpenGenericRegistrationSourceType = typeof(global::Autofac.Module).Assembly.GetType("Autofac.Features.OpenGenerics.OpenGenericRegistrationSource");
@@ -158,12 +160,11 @@ namespace Cogito.Autofac.DependencyInjection
                 var implementationType = typeArguments[1];
                 var componentContextParameter = Expression.Parameter(typeof(IComponentContext), "context");
                 var parameterParameter = Expression.Parameter(typeof(IEnumerable<Parameter>), "parameters");
-                var resolveMethodInfo = typeof(ResolutionExtensions).GetMethods().First(i => i.Name == nameof(ResolutionExtensions.Resolve) && i.IsGenericMethodDefinition && i.GetGenericArguments().Length == 1);
                 var func = Expression.Lambda(
                     typeof(Func<,,>).MakeGenericType(typeof(IComponentContext), typeof(IEnumerable<Parameter>), implementationType),
                     Expression.Invoke(
                         Expression.Constant(service.ImplementationFactory),
-                        Expression.Call(resolveMethodInfo.MakeGenericMethod(typeof(IServiceProvider)), componentContextParameter)),
+                        Expression.Call(ResolveServiceProviderMethodInfo, componentContextParameter)),
                     componentContextParameter,
                     parameterParameter);
 
@@ -203,12 +204,11 @@ namespace Cogito.Autofac.DependencyInjection
                 var componentContextParameter = Expression.Parameter(typeof(IComponentContext), "context");
                 var serviceKeyConstant = Expression.Constant(service.ServiceKey, typeof(object));
                 var parameterParameter = Expression.Parameter(typeof(IEnumerable<Parameter>), "parameters");
-                var resolveMethodInfo = typeof(ResolutionExtensions).GetMethods().First(i => i.Name == nameof(ResolutionExtensions.Resolve) && i.IsGenericMethodDefinition && i.GetGenericArguments().Length == 1);
                 var func = Expression.Lambda(
                     typeof(Func<,,>).MakeGenericType(typeof(IComponentContext), typeof(IEnumerable<Parameter>), implementationType),
                     Expression.Invoke(
                         Expression.Constant(service.KeyedImplementationFactory),
-                        Expression.Call(resolveMethodInfo.MakeGenericMethod(typeof(IServiceProvider)), componentContextParameter),
+                        Expression.Call(ResolveServiceProviderMethodInfo, componentContextParameter),
                         serviceKeyConstant),
                     componentContextParameter,
                     parameterParameter);
