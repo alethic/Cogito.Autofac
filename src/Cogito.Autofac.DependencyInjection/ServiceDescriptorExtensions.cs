@@ -43,36 +43,22 @@ namespace Cogito.Autofac.DependencyInjection
             if (service.ServiceType.GetTypeInfo().IsGenericTypeDefinition)
                 throw new NotSupportedException("Cannot convert generic type definition to component registration.");
 
-            if (service.IsKeyedService)
-            {
-                return new ServiceDescriptorComponentRegistration(
-                    Guid.NewGuid(),
-                    GetKeyedActivator(service),
-                    GetComponentLifetime(service, lifetimeScopeTagForSingletons),
-                    GetInstanceSharing(service),
-                    InstanceOwnership.OwnedByLifetimeScope,
-                    [new global::Autofac.Core.KeyedService(service.ServiceKey, service.ServiceType)],
-                    new Dictionary<string, object>()
-                    {
-                        ["__RegistrationOrder"] = registrationOrder
-                    },
-                    service);
-            }
-            else
-            {
-                return new ServiceDescriptorComponentRegistration(
-                    Guid.NewGuid(),
-                    GetActivator(service),
-                    GetComponentLifetime(service, lifetimeScopeTagForSingletons),
-                    GetInstanceSharing(service),
-                    InstanceOwnership.OwnedByLifetimeScope,
-                    [new TypedService(service.ServiceType)],
-                    new Dictionary<string, object>()
-                    {
-                        ["__RegistrationOrder"] = registrationOrder
-                    },
-                    service);
-            }
+            return new ServiceDescriptorComponentRegistration(
+                Guid.NewGuid(),
+                GetActivator(service),
+                GetComponentLifetime(service, lifetimeScopeTagForSingletons),
+                GetInstanceSharing(service),
+                InstanceOwnership.OwnedByLifetimeScope,
+                [
+                    service.IsKeyedService ?
+                        new global::Autofac.Core.KeyedService(service.ServiceKey, service.ServiceType) :
+                        new TypedService(service.ServiceType)
+                ],
+                new Dictionary<string, object>()
+                {
+                    ["__RegistrationOrder"] = registrationOrder
+                },
+                service);
         }
 
         /// <summary>
@@ -171,17 +157,6 @@ namespace Cogito.Autofac.DependencyInjection
                 // generate activator
                 return new DelegateActivator(service.ServiceType, (Func<IComponentContext, IEnumerable<Parameter>, object>)func.Compile());
             }
-
-            throw new InvalidOperationException();
-        }
-
-        /// <summary>
-        /// Gets the activator for the given keyed <see cref="ServiceDescriptor"/>.
-        /// </summary>
-        /// <param name="service"></param>
-        /// <returns></returns>
-        static IInstanceActivator GetKeyedActivator(ServiceDescriptor service)
-        {
             if (service.KeyedImplementationInstance != null)
                 return new ProvidedInstanceActivator(
                     service.KeyedImplementationInstance);
