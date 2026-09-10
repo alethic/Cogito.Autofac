@@ -97,11 +97,11 @@ jobs:
         - net6.0
         - net8.0
         exclude:
-        - tfm: net48
+        - tfm: net481
           sys: linux-x64
-        - tfm: net48
+        - tfm: net481
           sys: osx-x64
-        - tfm: net48
+        - tfm: net481
           sys: osx-arm64
     name: Test (${{ matrix.run }}:${{ matrix.tfm }}:${{ matrix.sys }})
     timeout-minutes: 240
