@@ -17,31 +17,38 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: read
     steps:
     - name: Checkout Source
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
     - name: Setup .NET 6.0
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 6.0.x
     - name: Setup .NET 8.0
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 8.0.x
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v3
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@v5
       with:
-        versionSpec: 5.x
+        dotnet-version: 10.0.x
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v4
+      with:
+        versionSpec: 6.x
     - name: Execute GitVersion
-      uses: gittools/actions/gitversion/execute@v3
+      uses: gittools/actions/gitversion/execute@v4
       with:
         useConfigFile: true
     - name: Add NuGet Source (GitHub)
       shell: pwsh
-      run: dotnet nuget add source --username USERNAME --password $env:GITHUB_TOKEN --store-password-in-clear-text --name alethic $env:GITHUB_REPOS
+      run: dotnet nuget add source $env:GITHUB_REPOS --name ${{ github.repository_owner }} --username USERNAME --password $env:GITHUB_TOKEN --store-password-in-clear-text
       env:
         GITHUB_REPOS: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -65,66 +72,60 @@ jobs:
           Cogito.Autofac.dist.msbuildproj
     - name: Upload MSBuild Log
       if: ${{ always() }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: msbuild.binlog
         path: msbuild.binlog
     - name: Upload NuGet Packages
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: nuget
-        path: dist/nuget/*.nupkg
+        path: dist/nuget
     - name: Package Tests
       run: tar czvf tests.tar.gz tests
       working-directory: dist
     - name: Upload Tests
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: tests
         path: dist/tests.tar.gz
   test:
     strategy:
+      fail-fast: false
       matrix:
-        run:
-        - Cogito.Autofac.Tests
-        sys:
-        - win-x64
-        - linux-x64
-        - osx-x64
-        - osx-arm64
-        tfm:
-        - net481
-        - net6.0
-        - net8.0
-        exclude:
-        - tfm: net481
-          sys: linux-x64
-        - tfm: net481
-          sys: osx-x64
-        - tfm: net481
-          sys: osx-arm64
+        include:
+        - { run: Cogito.Autofac.Tests, tfm: net481, sys: win-x64 }
+        - { run: Cogito.Autofac.Tests, tfm: net6.0, sys: win-x64 }
+        - { run: Cogito.Autofac.Tests, tfm: net6.0, sys: linux-x64 }
+        - { run: Cogito.Autofac.Tests, tfm: net6.0, sys: osx-arm64 }
+        - { run: Cogito.Autofac.Tests, tfm: net8.0, sys: win-x64 }
+        - { run: Cogito.Autofac.Tests, tfm: net8.0, sys: linux-x64 }
+        - { run: Cogito.Autofac.Tests, tfm: net8.0, sys: osx-arm64 }
     name: Test (${{ matrix.run }}:${{ matrix.tfm }}:${{ matrix.sys }})
-    timeout-minutes: 240
     needs:
     - build
-    runs-on: ${{ fromJSON('{"win-x64":["windows-2022"],"linux-x64":["ubuntu-22.04"],"osx-x64":["macos-15-intel"],"osx-arm64":["macos-15"]}')[matrix.sys] }}
+    runs-on: ${{ fromJSON('{"win-x64":["windows-2022"],"linux-x64":["ubuntu-24.04"],"osx-arm64":["macos-15"]}')[matrix.sys] }}
     steps:
     - name: Setup .NET 6.0
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 6.0.x
     - name: Setup .NET 8.0
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 8.0.x
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 10.0.x
     - name: Download Tests
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: tests
     - name: Restore Tests
       run: tar xzvf tests.tar.gz
     - name: Execute Tests
-      timeout-minutes: 240
+      timeout-minutes: 120
       shell: pwsh
       run: |
         # assign powershell variables
@@ -151,7 +152,7 @@ jobs:
                 "--logger:console;verbosity=diag",
                 "--logger:trx"
             )
-            
+
             $runsettings = $(gi .\tests\$tst\$tfm\*.runsettings)
             if ($runsettings) {
                 $argl += "--settings:$runsettings"
@@ -163,16 +164,15 @@ jobs:
             } else {
                 Add-Content $env:GITHUB_ENV "`nRET=TestResults--$tst--$tfm--$sys"
             }
-            
+
             dotnet test @argl $tests[0].FullName
         }
     - name: Archive Test Results
       if: always() && startsWith(env.RET, 'TestResults--')
       run: tar czvf TestResults.tar.gz TestResults
-      working-directory: ${{ env.WORKPATH }}
     - name: Upload Test Results
       if: always() && startsWith(env.RET, 'TestResults--')
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ env.RET }}
         path: TestResults.tar.gz
@@ -181,23 +181,38 @@ jobs:
     if: github.event_name != 'pull_request'
     needs:
     - test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      packages: write
     steps:
     - name: Checkout Source
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v3
+    - name: Setup .NET 6.0
+      uses: actions/setup-dotnet@v5
       with:
-        versionSpec: 5.x
+        dotnet-version: 6.0.x
+    - name: Setup .NET 8.0
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 8.0.x
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 10.0.x
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v4
+      with:
+        versionSpec: 6.x
     - name: Execute GitVersion
       id: GitVersion
-      uses: gittools/actions/gitversion/execute@v3
+      uses: gittools/actions/gitversion/execute@v4
       with:
         useConfigFile: true
     - name: Download NuGet Packages
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: nuget
         path: dist/nuget
@@ -208,11 +223,11 @@ jobs:
         tag: ${{ steps.GitVersion.outputs.semVer }}
         allowUpdates: true
         omitBodyDuringUpdate: true
-        artifacts: dist/nuget/*.nupkg,dist/nuget/*.snupkg,dist/doc.zip
+        replacesArtifacts: true
+        artifacts: dist/nuget/*.nupkg,dist/nuget/*.snupkg
         makeLatest: true
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Push NuGet (GitHub)
-      if: github.event_name != 'pull_request'
       shell: pwsh
       run: dotnet nuget push dist/nuget/*.nupkg --source $env:GITHUB_REPOS --api-key $env:GITHUB_TOKEN --skip-duplicate
       env:
