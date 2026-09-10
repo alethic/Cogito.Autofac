@@ -6,8 +6,6 @@ using System.Reflection;
 using Autofac;
 using Autofac.Builder;
 
-using Cogito.Linq;
-
 namespace Cogito.Autofac
 {
 
@@ -93,11 +91,7 @@ namespace Cogito.Autofac
 
             // root is itself a builder add it to builder list
             if (attribute is IRegistrationBuilderAttribute a)
-#if NETFRAMEWORK
-                builders = Cogito.Linq.EnumerableExtensions.Append(builders, a);
-#else
                 builders = builders.Append(a);
-#endif
 
             // core registration method with final set of builders
             RegisterCore(builder, type, attribute, builders);

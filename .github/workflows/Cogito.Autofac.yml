@@ -97,17 +97,17 @@ jobs:
         - net6.0
         - net8.0
         exclude:
-        - tfm: net48
+        - tfm: net481
           sys: linux-x64
-        - tfm: net48
+        - tfm: net481
           sys: osx-x64
-        - tfm: net48
+        - tfm: net481
           sys: osx-arm64
     name: Test (${{ matrix.run }}:${{ matrix.tfm }}:${{ matrix.sys }})
     timeout-minutes: 240
     needs:
     - build
-    runs-on: ${{ fromJSON('{"win-x64":["windows-2022"],"linux-x64":["ubuntu-22.04"],"osx-x64":["macos-13"],"osx-arm64":["macos-14"]}')[matrix.sys] }}
+    runs-on: ${{ fromJSON('{"win-x64":["windows-2022"],"linux-x64":["ubuntu-22.04"],"osx-x64":["macos-15-intel"],"osx-arm64":["macos-15"]}')[matrix.sys] }}
     steps:
     - name: Setup .NET 6.0
       uses: actions/setup-dotnet@v4

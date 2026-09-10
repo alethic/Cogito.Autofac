@@ -8,8 +8,7 @@ using Autofac;
 using Autofac.Core;
 using Autofac.Features.Metadata;
 
-using Cogito.Collections;
-using Cogito.Reflection;
+using Cogito.Autofac.Internal;
 
 namespace Cogito.Autofac
 {

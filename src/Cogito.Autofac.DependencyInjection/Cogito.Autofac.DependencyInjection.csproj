@@ -11,6 +11,11 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
     </ItemGroup>
 
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+        <!-- System.Lazy<T, TMetadata> lives in MEF on .NET Framework. -->
+        <Reference Include="System.ComponentModel.Composition" />
+    </ItemGroup>
+
     <ItemGroup>
         <ProjectReference Include="..\Cogito.Autofac\Cogito.Autofac.csproj" />
     </ItemGroup>
