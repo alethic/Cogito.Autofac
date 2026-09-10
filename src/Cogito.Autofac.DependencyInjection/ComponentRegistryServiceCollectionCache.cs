@@ -11,7 +11,7 @@ using Autofac.Core.Activators.Reflection;
 using Autofac.Core.Registration;
 using Autofac.Features.Metadata;
 
-using Cogito.Collections;
+using Cogito.Autofac.DependencyInjection.Internal;
 
 using Microsoft.Extensions.DependencyInjection;
 

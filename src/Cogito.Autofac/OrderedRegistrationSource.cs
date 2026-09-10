@@ -6,7 +6,7 @@ using System.Reflection;
 using Autofac.Builder;
 using Autofac.Core;
 
-using Cogito.Reflection;
+using Cogito.Autofac.Internal;
 
 namespace Cogito.Autofac
 {

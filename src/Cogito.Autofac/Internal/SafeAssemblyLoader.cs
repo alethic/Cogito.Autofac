@@ -1,0 +1,145 @@
+﻿// Ported from Cogito.Core (https://github.com/alethic/Cogito), Cogito.Reflection.SafeAssemblyLoader.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
+#if NETFRAMEWORK
+using System.IO;
+#else
+using System.Runtime.Loader;
+
+using Microsoft.Extensions.DependencyModel;
+#endif
+
+namespace Cogito.Autofac.Internal
+{
+
+    /// <summary>
+    /// Loads assemblies, ignoring failures.
+    /// </summary>
+    static class SafeAssemblyLoader
+    {
+
+#if NETFRAMEWORK
+
+        /// <summary>
+        /// Loads an <see cref="Assembly"/> from a path, ignoring failures.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static Assembly Load(string path)
+        {
+            if (path == null)
+                throw new ArgumentNullException(nameof(path));
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentOutOfRangeException(nameof(path));
+
+            try
+            {
+                return Assembly.LoadFrom(path);
+            }
+            catch (Exception)
+            {
+                // ignore
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Load all assemblies.
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<Assembly> LoadAll()
+        {
+            return GetBaseDirectories()
+                .Where(i => !string.IsNullOrWhiteSpace(i))
+                .Distinct()
+                .Where(i => Directory.Exists(i))
+                .SelectMany(i => Enumerable.Empty<string>()
+                    .Concat(Directory.EnumerateFiles(i, "*.dll", SearchOption.TopDirectoryOnly))
+                    .Concat(Directory.EnumerateFiles(i, "*.exe", SearchOption.TopDirectoryOnly)))
+                .Distinct()
+                .Select(i => Load(i))
+                .Where(i => i != null);
+        }
+
+        /// <summary>
+        /// Gets the application search paths.
+        /// </summary>
+        /// <returns></returns>
+        static IEnumerable<string> GetBaseDirectories()
+        {
+            yield return AppDomain.CurrentDomain.BaseDirectory;
+            yield return AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+            yield return AppDomain.CurrentDomain.SetupInformation.PrivateBinPath;
+        }
+
+#else
+
+        /// <summary>
+        /// Load all assemblies.
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<Assembly> LoadAll(DependencyContext dependencyContext, AssemblyLoadContext assemblyLoadContext)
+        {
+            if (dependencyContext is null)
+                throw new ArgumentNullException(nameof(dependencyContext));
+            if (assemblyLoadContext is null)
+                throw new ArgumentNullException(nameof(assemblyLoadContext));
+
+            return dependencyContext.RuntimeLibraries
+                .SelectMany(i => i.GetDefaultAssemblyNames(dependencyContext))
+                .Select(i => LoadFromAssemblyName(i, assemblyLoadContext))
+                .Where(i => i != null);
+        }
+
+        /// <summary>
+        /// Load all assemblies.
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<Assembly> LoadAll(DependencyContext dependencyContext)
+        {
+            if (dependencyContext is null)
+                throw new ArgumentNullException(nameof(dependencyContext));
+
+            return LoadAll(dependencyContext, AssemblyLoadContext.Default);
+        }
+
+        /// <summary>
+        /// Load all assemblies.
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<Assembly> LoadAll()
+        {
+            return LoadAll(DependencyContext.Default, AssemblyLoadContext.Default);
+        }
+
+        /// <summary>
+        /// Safely loads the specified <see cref="Assembly"/>.
+        /// </summary>
+        /// <param name="assemblyName"></param>
+        static Assembly LoadFromAssemblyName(AssemblyName assemblyName, AssemblyLoadContext assemblyLoadContext)
+        {
+            if (assemblyName is null)
+                throw new ArgumentNullException(nameof(assemblyName));
+            if (assemblyLoadContext is null)
+                throw new ArgumentNullException(nameof(assemblyLoadContext));
+
+            try
+            {
+                return assemblyLoadContext.LoadFromAssemblyName(assemblyName);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+#endif
+
+    }
+
+}

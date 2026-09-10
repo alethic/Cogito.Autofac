@@ -5,7 +5,7 @@ using System.Linq;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
-using Cogito.Collections;
+using Cogito.Autofac.DependencyInjection.Internal;
 
 using Microsoft.Extensions.DependencyInjection;
 

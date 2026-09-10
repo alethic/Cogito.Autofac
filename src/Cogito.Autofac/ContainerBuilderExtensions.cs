@@ -6,7 +6,7 @@ using Autofac.Builder;
 using Autofac.Core;
 using Autofac.Core.Registration;
 
-using Cogito.Reflection;
+using Cogito.Autofac.Internal;
 
 using Microsoft.Extensions.DependencyModel;
 
