@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
     <PropertyGroup>
         <LangVersion Condition=" '$(LangVersion)' == '' ">12.0</LangVersion>
     </PropertyGroup>
@@ -23,6 +23,8 @@
     </PropertyGroup>
 
     <PropertyGroup Label="Package Info">
+        <PackageReadmeFile Condition=" Exists('$(MSBuildProjectDirectory)/README.md') ">README.md</PackageReadmeFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryUrl Condition=" '$(RepositoryUrl)' == '' ">https://github.com/alethic/Cogito.Autofac.git</RepositoryUrl>
         <RepositoryType Condition=" '$(RepositoryType)' == '' ">git</RepositoryType>
         <PackageProjectUrl  Condition=" '$(PackageProjectUrl)' == '' ">https://github.com/alethic/Cogito.Autofac</PackageProjectUrl>
@@ -34,6 +36,10 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="" Visible="false" Condition=" Exists('README.md') " />
     </ItemGroup>
 
 </Project>
