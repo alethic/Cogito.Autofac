@@ -82,14 +82,19 @@ namespace Cogito.Autofac.Tests.DependencyInjection
         }
 
         [TestMethod]
-        [ExpectedException(typeof(NotSupportedException))]
         public void Should_fail_when_trying_to_remove_service_registered_elsewhere()
         {
             var d = ServiceDescriptor.Singleton(new object());
             var b = new global::Autofac.ContainerBuilder();
             b.Populate(s => s.Add(d));
-            b.Populate(s => s.Remove(d));
-            var c = b.Build();
+
+            var a = () =>
+            {
+                b.Populate(s => s.Remove(d));
+                b.Build();
+            };
+
+            a.Should().ThrowExactly<NotSupportedException>();
         }
 
         [TestMethod]
