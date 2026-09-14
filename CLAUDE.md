@@ -9,7 +9,7 @@ Publishes 2 packages: `Cogito.Autofac`, `Cogito.Autofac.DependencyInjection`.
 ## Build and test
 
 ```shell
-dotnet restore Cogito.Autofac.sln
+dotnet restore Cogito.Autofac.slnx
 dotnet msbuild -p:Configuration=Release Cogito.Autofac.dist.msbuildproj
 ```
 
