@@ -53,7 +53,7 @@ jobs:
         GITHUB_REPOS: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: NuGet Restore
-      run: dotnet restore Cogito.Autofac.sln
+      run: dotnet restore Cogito.Autofac.slnx
     - name: Build
       shell: pwsh
       run: |
